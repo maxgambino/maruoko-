@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reserva · Food Truck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* ========== CONFIG ========== */
+    :root {
+      --accent: #C45D3E;
+      --accent-light: #F4E8E3;
+      --accent-dark: #9E3E24;
+      --bg: #FFFBF7;
+      --bg-card: #FFFFFF;
+      --text: #2C1810;
+      --text-muted: #8C7A70;
+      --border: #E8DDD6;
+      --success: #3A7D44;
+      --success-light: #E8F5E9;
+      --danger: #C0392B;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --shadow: 0 2px 12px rgba(44, 24, 16, 0.08);
+      --shadow-lg: 0 8px 32px rgba(44, 24, 16, 0.12);
+      --font-body: 'DM Sans', -apple-system, sans-serif;
+      --font-display: 'Playfair Display', Georgia, serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ========== LAYOUT ========== */
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 20px 120px;
+    }
+
+    /* ========== HEADER ========== */
+    .header {
+      text-align: center;
+      padding: 40px 0 32px;
+    }
+    .header-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    .header h1 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .header p {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-top: 8px;
+    }
+
+    /* ========== STEPPER ========== */
+    .stepper {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    .step-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: all 0.3s ease;
+    }
+    .step-dot.active {
+      background: var(--accent);
+      width: 28px;
+      border-radius: 5px;
+    }
+    .step-dot.done {
+      background: var(--success);
+    }
+
+    /* ========== SECTIONS ========== */
+    .section { display: none; }
+    .section.active {
+      display: block;
+      animation: fadeUp 0.35s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .section-subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    /* ========== MENU ITEMS ========== */
+    .menu-item {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+    }
+    .menu-item.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    .menu-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 4px;
+    }
+    .menu-item-name {
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .menu-item-price {
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 16px;
+      white-space: nowrap;
+      margin-left: 12px;
+    }
+    .menu-item-desc {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    /* Quantity control */
+    .qty-control {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .qty-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .qty-btn:active {
+      transform: scale(0.92);
+    }
+    .qty-btn.minus { color: var(--danger); border-color: var(--danger); }
+    .qty-btn.plus { color: var(--accent); border-color: var(--accent); }
+    .qty-value {
+      font-weight: 700;
+      font-size: 18px;
+      min-width: 24px;
+      text-align: center;
+    }
+
+    /* ========== TIME SLOTS ========== */
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .slot-btn {
+      padding: 14px 8px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      background: var(--bg-card);
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+    .slot-btn:active { transform: scale(0.96); }
+    .slot-btn.selected {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: white;
+    }
+    .slot-btn.full {
+      opacity: 0.4;
+      pointer-events: none;
+      text-decoration: line-through;
+    }
+    .slot-btn .slot-avail {
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .slot-btn.selected .slot-avail { color: rgba(255,255,255,0.7); }
+
+    /* ========== FORM ========== */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .form-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 16px;
+      color: var(--text);
+      background: var(--bg-card);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus {
+      border-color: var(--accent);
+    }
+    .form-group input::placeholder { color: var(--text-muted); }
+
+    /* ========== SUMMARY ========== */
+    .summary-card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 14px;
+    }
+    .summary-row + .summary-row { border-top: 1px solid var(--border); }
+    .summary-row .label { color: var(--text-muted); }
+    .summary-row .value { font-weight: 600; }
+    .summary-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 0;
+      border-top: 2px solid var(--text);
+      margin-top: 8px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    /* ========== CONFIRMATION ========== */
+    .confirmation {
+      text-align: center;
+      padding: 40px 0;
+    }
+    .confirmation-check {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--success-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 40px;
+    }
+    .confirmation h2 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    .confirmation p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .order-number-display {
+      display: inline-block;
+      background: var(--accent-light);
+      color: var(--accent-dark);
+      font-size: 32px;
+      font-weight: 700;
+      padding: 12px 32px;
+      border-radius: var(--radius);
+      margin: 20px 0;
+      letter-spacing: 2px;
+    }
+
+    /* ========== BUTTONS ========== */
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: white;
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      -webkit-appearance: none;
+    }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    /* ========== BOTTOM BAR ========== */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+    }
+    .bottom-bar .total {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .bottom-bar .total strong {
+      display: block;
+      font-size: 20px;
+      color: var(--text);
+    }
+    .bottom-bar .btn-primary {
+      width: auto;
+      padding: 14px 28px;
+    }
+
+    /* ========== LOADING ========== */
+    .loading {
+      text-align: center;
+      padding: 60px 0;
+      color: var(--text-muted);
+    }
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ========== ERROR ========== */
+    .error-msg {
+      background: #FDE8E8;
+      color: var(--danger);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .error-msg.visible { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-icon">🚚</div>
+      <h1 id="truckName">Food Truck Belém</h1>
+      <p>Reserva a tua refeição e evita a espera</p>
+    </div>
+
+    <!-- STEPPER -->
+    <div class="stepper" id="stepper">
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+
+    <!-- ERROR -->
+    <div class="error-msg" id="errorMsg"></div>
+
+    <!-- LOADING -->
+    <div class="loading" id="loadingState">
+      <div class="spinner"></div>
+      <p>A carregar o menu...</p>
+    </div>
+
+    <!-- STEP 1: MENU -->
+    <div class="section" id="step1">
+      <div class="section-title">O que vais querer?</div>
+      <div class="section-subtitle">Escolhe os teus pratos</div>
+      <div id="menuList"></div>
+    </div>
+
+    <!-- STEP 2: TIME SLOT -->
+    <div class="section" id="step2">
+      <div class="section-title">A que horas vens?</div>
+      <div class="section-subtitle">Escolhe o teu horário de recolha</div>
+      <div class="slots-grid" id="slotsGrid"></div>
+    </div>
+
+    <!-- STEP 3: INFO + CONFIRM -->
+    <div class="section" id="step3">
+      <div class="section-title">Quase lá!</div>
+      <div class="section-subtitle">O teu nome e telefone para confirmar</div>
+
+      <div class="form-group">
+        <label for="customerName">Nome</label>
+        <input type="text" id="customerName" placeholder="O teu nome" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label for="customerPhone">Telemóvel</label>
+        <input type="tel" id="customerPhone" placeholder="+351 ..." autocomplete="tel">
+      </div>
+
+      <div class="summary-card" id="orderSummary"></div>
+
+      <button class="btn-primary" id="btnConfirm" onclick="submitOrder()">
+        Confirmar reserva
+      </button>
+    </div>
+
+    <!-- STEP 4: CONFIRMATION -->
+    <div class="section" id="step4">
+      <div class="confirmation">
+        <div class="confirmation-check">✓</div>
+        <h2>Reserva confirmada!</h2>
+        <p>Apresenta este número quando chegares</p>
+        <div class="order-number-display" id="confirmOrderNumber">—</div>
+        <div class="summary-card" id="confirmSummary"></div>
+        <button class="btn-secondary" onclick="resetApp()">Nova reserva</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR (steps 1-2) -->
+  <div class="bottom-bar" id="bottomBar" style="display:none;">
+    <div class="total">
+      Total<br>
+      <strong id="totalDisplay">€0.00</strong>
+    </div>
+    <button class="btn-primary" id="btnNext" disabled onclick="nextStep()">
+      Seguinte →
+    </button>
+  </div>
+
+<script>
+// ============================================
+// CONFIG — replace with your Supabase project
+// ============================================
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ============================================
+// STATE
+// ============================================
+let menuItems = [];
+let slots = [];
+let cart = {};           // { itemId: quantity }
+let selectedSlot = null;
+let currentStep = 1;
+
+// ============================================
+// INIT
+// ============================================
+async function init() {
+  try {
+    // Load menu
+    const { data: menu, error: menuErr } = await supabase
+      .from('menu_items')
+      .select('*')
+      .eq('available', true)
+      .order('position');
+    
+    if (menuErr) throw menuErr;
+    menuItems = menu || [];
+
+    // Load slot availability for today
+    const today = new Date().toISOString().split('T')[0];
+    const { data: slotData, error: slotErr } = await supabase
+      .rpc('get_slot_availability', { target_date: today });
+    
+    if (slotErr) throw slotErr;
+    slots = slotData || [];
+
+    renderMenu();
+    renderSlots();
+    showStep(1);
+    document.getElementById('loadingState').style.display = 'none';
+  } catch (err) {
+    console.error('Init error:', err);
+    showError('Erro ao carregar. Tenta de novo.');
+  }
+}
+
+// ============================================
+// RENDERING
+// ============================================
+function renderMenu() {
+  const list = document.getElementById('menuList');
+  list.innerHTML = menuItems.map(item => `
+    <div class="menu-item" id="item-${item.id}" data-id="${item.id}">
+      <div class="menu-item-top">
+        <span class="menu-item-name">${item.name}</span>
+        <span class="menu-item-price">€${item.price.toFixed(2)}</span>
+      </div>
+      ${item.description ? `<div class="menu-item-desc">${item.description}</div>` : ''}
+      <div class="qty-control">
+        <button class="qty-btn minus" onclick="changeQty('${item.id}', -1)" style="visibility:hidden">−</button>
+        <span class="qty-value" id="qty-${item.id}">0</span>
+        <button class="qty-btn plus" onclick="changeQty('${item.id}', 1)">+</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSlots() {
+  const grid = document.getElementById('slotsGrid');
+  grid.innerHTML = slots.map(slot => {
+    const remaining = slot.max_orders - slot.current_orders;
+    const isFull = remaining <= 0;
+    return `
+      <button 
+        class="slot-btn ${isFull ? 'full' : ''} ${selectedSlot === slot.slot_time ? 'selected' : ''}"
+        onclick="selectSlot('${slot.slot_time}')"
+        ${isFull ? 'disabled' : ''}>
+        ${slot.slot_time}
+        <span class="slot-avail">${isFull ? 'Esgotado' : remaining + ' vaga' + (remaining > 1 ? 's' : '')}</span>
+      </button>
+    `;
+  }).join('');
+}
+
+function renderSummary(targetId) {
+  const container = document.getElementById(targetId);
+  const items = Object.entries(cart)
+    .filter(([_, qty]) => qty > 0)
+    .map(([id, qty]) => {
+      const item = menuItems.find(m => m.id === id);
+      return { ...item, qty };
+    });
+
+  let html = items.map(item => `
+    <div class="summary-row">
+      <span class="label">${item.qty}× ${item.name}</span>
+      <span class="value">€${(item.price * item.qty).toFixed(2)}</span>
+    </div>
+  `).join('');
+
+  html += `
+    <div class="summary-row">
+      <span class="label">⏰ Horário</span>
+      <span class="value">${selectedSlot || '—'}</span>
+    </div>
+    <div class="summary-total">
+      <span>Total</span>
+      <span>€${getTotal().toFixed(2)}</span>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+// ============================================
+// INTERACTIONS
+// ============================================
+function changeQty(itemId, delta) {
+  const current = cart[itemId] || 0;
+  const next = Math.max(0, current + delta);
+  cart[itemId] = next;
+
+  // Update display
+  document.getElementById(`qty-${itemId}`).textContent = next;
+
+  // Toggle selected state
+  const el = document.getElementById(`item-${itemId}`);
+  el.classList.toggle('selected', next > 0);
+
+  // Show/hide minus button
+  const minus = el.querySelector('.minus');
+  minus.style.visibility = next > 0 ? 'visible' : 'hidden';
+
+  updateBottomBar();
+}
+
+function selectSlot(time) {
+  selectedSlot = time;
+  renderSlots();
+  updateBottomBar();
+}
+
+function getTotal() {
+  return Object.entries(cart).reduce((sum, [id, qty]) => {
+    const item = menuItems.find(m => m.id === id);
+    return sum + (item ? item.price * qty : 0);
+  }, 0);
+}
+
+function getItemCount() {
+  return Object.values(cart).reduce((s, q) => s + q, 0);
+}
+
+function updateBottomBar() {
+  const total = getTotal();
+  document.getElementById('totalDisplay').textContent = `€${total.toFixed(2)}`;
+
+  const btnNext = document.getElementById('btnNext');
+  if (currentStep === 1) {
+    btnNext.disabled = getItemCount() === 0;
+    btnNext.textContent = 'Escolher horário →';
+  } else if (currentStep === 2) {
+    btnNext.disabled = !selectedSlot;
+    btnNext.textContent = 'Seguinte →';
+  }
+}
+
+// ============================================
+// NAVIGATION
+// ============================================
+function showStep(step) {
+  currentStep = step;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`step${step}`).classList.add('active');
+
+  // Update stepper dots
+  document.querySelectorAll('.step-dot').forEach((dot, i) => {
+    dot.className = 'step-dot';
+    if (i + 1 === step) dot.classList.add('active');
+    else if (i + 1 < step) dot.classList.add('done');
+  });
+
+  // Bottom bar visibility
+  const bar = document.getElementById('bottomBar');
+  bar.style.display = (step <= 2) ? 'flex' : 'none';
+
+  updateBottomBar();
+
+  if (step === 3) renderSummary('orderSummary');
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextStep() {
+  if (currentStep === 1 && getItemCount() > 0) showStep(2);
+  else if (currentStep === 2 && selectedSlot) showStep(3);
+}
+
+// ============================================
+// SUBMIT ORDER
+// ============================================
+async function submitOrder() {
+  const name = document.getElementById('customerName').value.trim();
+  const phone = document.getElementById('customerPhone').value.trim();
+
+  if (!name || !phone) {
+    showError('Preenche o teu nome e telemóvel');
+    return;
+  }
+
+  const btn = document.getElementById('btnConfirm');
+  btn.disabled = true;
+  btn.textContent = 'A enviar...';
+  hideError();
+
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const total = getTotal();
+
+    // Insert order
+    const { data: order, error: orderErr } = await supabase
+      .from('orders')
+      .insert({
+        customer_name: name,
+        customer_phone: phone,
+        slot_time: selectedSlot,
+        slot_date: today,
+        total_amount: total,
+        status: 'pending'
+      })
+      .select('id, order_number')
+      .single();
+
+    if (orderErr) throw orderErr;
+
+    // Insert order items
+    const items = Object.entries(cart)
+      .filter(([_, qty]) => qty > 0)
+      .map(([id, qty]) => {
+        const item = menuItems.find(m => m.id === id);
+        return {
+          order_id: order.id,
+          menu_item_id: id,
+          item_name: item.name,
+          item_price: item.price,
+          quantity: qty
+        };
+      });
+
+    const { error: itemsErr } = await supabase
+      .from('order_items')
+      .insert(items);
+
+    if (itemsErr) throw itemsErr;
+
+    // Show confirmation
+    document.getElementById('confirmOrderNumber').textContent = `#${String(order.order_number).padStart(3, '0')}`;
+    renderSummary('confirmSummary');
+    showStep(4);
+
+  } catch (err) {
+    console.error('Submit error:', err);
+    showError('Erro ao enviar. Tenta de novo.');
+    btn.disabled = false;
+    btn.textContent = 'Confirmar reserva';
+  }
+}
+
+// ============================================
+// UTILS
+// ============================================
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+function hideError() {
+  document.getElementById('errorMsg').classList.remove('visible');
+}
+
+function resetApp() {
+  cart = {};
+  selectedSlot = null;
+  init();
+}
+
+// ============================================
+// GO
+// ============================================
+init();
+</script>
+
+</body>
+</html>

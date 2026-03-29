@@ -6,7 +6,7 @@
   <title>Admin · Food Truck</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
   <style>
     :root {
       --accent: #C45D3E;
@@ -348,8 +348,8 @@
 // ============================================
 // CONFIG
 // ============================================
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_KEY = 'YOUR_SUPABASE_SERVICE_ROLE_KEY'; // ⚠️ service_role for admin
+const SUPABASE_URL = 'https://onkgxuxxrquhaqcthazv.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ua2d4dXh4cnF1aGFxY3RoYXp2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDc3NzUzNSwiZXhwIjoyMDkwMzUzNTM1fQ.W6FN-vGvlz5M2F1JCJDOaxYM1XYyZCTG82ngjNacNyI'; // ⚠️ service_role for admin
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ============================================

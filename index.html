@@ -333,16 +333,34 @@
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.25s ease;
       -webkit-appearance: none;
       letter-spacing: 0.3px;
     }
-    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary.ready {
+      background: var(--brand);
+    }
+    .btn-primary.ready:hover { background: #7a1c1e; }
     .btn-primary:active { transform: scale(0.98); }
     .btn-primary:disabled {
-      opacity: 0.4;
+      background: var(--accent);
+      opacity: 0.5;
       pointer-events: none;
     }
+
+    .btn-back {
+      padding: 14px 16px;
+      border: none;
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .btn-back:active { color: var(--brand); }
 
     .btn-secondary {
       width: 100%;
@@ -491,6 +509,7 @@
 
   <!-- BOTTOM BAR (steps 1-2) -->
   <div class="bottom-bar" id="bottomBar" style="display:none;">
+    <button class="btn-back" id="btnBack" onclick="prevStep()" style="display:none;">← Voltar</button>
     <div class="total">
       Total<br>
       <strong id="totalDisplay">€0.00</strong>
@@ -670,11 +689,20 @@ function updateBottomBar() {
   document.getElementById('totalDisplay').textContent = `€${total.toFixed(2)}`;
 
   const btnNext = document.getElementById('btnNext');
+  const btnBack = document.getElementById('btnBack');
+
+  // Show back button on step 2+
+  btnBack.style.display = currentStep > 1 ? 'block' : 'none';
+
   if (currentStep === 1) {
-    btnNext.disabled = getItemCount() === 0;
+    const hasItems = getItemCount() > 0;
+    btnNext.disabled = !hasItems;
+    btnNext.classList.toggle('ready', hasItems);
     btnNext.textContent = 'Escolher horário →';
   } else if (currentStep === 2) {
-    btnNext.disabled = !selectedSlot;
+    const hasSlot = !!selectedSlot;
+    btnNext.disabled = !hasSlot;
+    btnNext.classList.toggle('ready', hasSlot);
     btnNext.textContent = 'Seguinte →';
   }
 }
@@ -708,6 +736,10 @@ function showStep(step) {
 function nextStep() {
   if (currentStep === 1 && getItemCount() > 0) showStep(2);
   else if (currentStep === 2 && selectedSlot) showStep(3);
+}
+
+function prevStep() {
+  if (currentStep > 1) showStep(currentStep - 1);
 }
 
 // ============================================

@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin · Food Truck</title>
+  <title>MARUOKO · Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
   <style>
     :root {
-      --accent: #C45D3E;
-      --accent-light: #F4E8E3;
-      --accent-dark: #9E3E24;
-      --bg: #F5F1ED;
+      --accent: #b30310;
+      --accent-light: #fce8e9;
+      --accent-dark: #8a020c;
+      --bg: #fef6e8;
       --bg-card: #FFFFFF;
-      --text: #2C1810;
+      --text: #b30310;
       --text-muted: #8C7A70;
-      --border: #E0D6CE;
+      --border: #e8d9c4;
       --success: #3A7D44;
       --success-bg: #E8F5E9;
       --warning: #E67E22;
@@ -305,7 +305,7 @@
 
   <!-- TOPBAR -->
   <div class="topbar">
-    <h1>🚚 Dashboard</h1>
+    <h1>🇯🇵 MARUOKO Dashboard</h1>
     <div class="date-display" id="dateDisplay"></div>
   </div>
 
@@ -350,7 +350,8 @@
 // ============================================
 const SUPABASE_URL = 'https://onkgxuxxrquhaqcthazv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ua2d4dXh4cnF1aGFxY3RoYXp2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDc3NzUzNSwiZXhwIjoyMDkwMzUzNTM1fQ.W6FN-vGvlz5M2F1JCJDOaxYM1XYyZCTG82ngjNacNyI'; // ⚠️ service_role for admin
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const _sb = window.supabase || window.Supabase;
+const supabase = _sb.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ============================================
 // STATE

@@ -3,28 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reserva · Food Truck</title>
+  <title>MARUOKO · Hiroshima Okonomiyaki</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
   <style>
     /* ========== CONFIG ========== */
     :root {
-      --accent: #C45D3E;
-      --accent-light: #F4E8E3;
-      --accent-dark: #9E3E24;
-      --bg: #FFFBF7;
+      --accent: #D6B6AE;
+      --accent-hover: #c9a49b;
+      --brand: #8E2124;
+      --bg: #F4F0E8;
       --bg-card: #FFFFFF;
-      --text: #2C1810;
-      --text-muted: #8C7A70;
-      --border: #E8DDD6;
+      --text: #4A433F;
+      --text-light: #D5D1CB;
+      --text-muted: #9A938D;
+      --border: #E0D9D0;
       --success: #3A7D44;
       --success-light: #E8F5E9;
       --danger: #C0392B;
-      --radius: 14px;
-      --radius-sm: 8px;
-      --shadow: 0 2px 12px rgba(44, 24, 16, 0.08);
-      --shadow-lg: 0 8px 32px rgba(44, 24, 16, 0.12);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 1px 8px rgba(74, 67, 63, 0.06);
+      --shadow-lg: 0 4px 24px rgba(74, 67, 63, 0.10);
       --font-body: 'DM Sans', -apple-system, sans-serif;
       --font-display: 'Playfair Display', Georgia, serif;
     }
@@ -49,23 +50,25 @@
     /* ========== HEADER ========== */
     .header {
       text-align: center;
-      padding: 40px 0 32px;
+      padding: 40px 0 28px;
     }
-    .header-icon {
-      font-size: 48px;
-      margin-bottom: 12px;
+    .header-logo {
+      width: 100px;
+      height: auto;
+      margin-bottom: 16px;
     }
     .header h1 {
       font-family: var(--font-display);
-      font-size: 28px;
+      font-size: 32px;
       font-weight: 700;
-      color: var(--text);
+      color: var(--brand);
       line-height: 1.2;
     }
-    .header p {
+    .header .subtitle {
       color: var(--text-muted);
-      font-size: 15px;
-      margin-top: 8px;
+      font-size: 14px;
+      margin-top: 6px;
+      line-height: 1.5;
     }
 
     /* ========== STEPPER ========== */
@@ -84,11 +87,11 @@
     }
     .step-dot.active {
       background: var(--accent);
-      width: 28px;
+      width: 24px;
       border-radius: 5px;
     }
     .step-dot.done {
-      background: var(--success);
+      background: var(--brand);
     }
 
     /* ========== SECTIONS ========== */
@@ -105,8 +108,9 @@
 
     .section-title {
       font-family: var(--font-display);
-      font-size: 22px;
-      font-weight: 600;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--brand);
       margin-bottom: 4px;
     }
     .section-subtitle {
@@ -125,8 +129,8 @@
       transition: all 0.2s ease;
     }
     .menu-item.selected {
-      border-color: var(--accent);
-      background: var(--accent-light);
+      border-color: var(--brand);
+      background: #f9f0ef;
     }
     .menu-item-top {
       display: flex;
@@ -137,10 +141,11 @@
     .menu-item-name {
       font-weight: 600;
       font-size: 16px;
+      color: var(--text);
     }
     .menu-item-price {
       font-weight: 700;
-      color: var(--accent);
+      color: var(--brand);
       font-size: 16px;
       white-space: nowrap;
       margin-left: 12px;
@@ -177,8 +182,9 @@
     .qty-btn:active {
       transform: scale(0.92);
     }
-    .qty-btn.minus { color: var(--danger); border-color: var(--danger); }
-    .qty-btn.plus { color: var(--accent); border-color: var(--accent); }
+    .qty-btn.minus { color: var(--text-light); border-color: var(--text-light); }
+    .qty-btn.minus.active { color: var(--brand); border-color: var(--brand); }
+    .qty-btn.plus { color: var(--brand); border-color: var(--brand); }
     .qty-value {
       font-weight: 700;
       font-size: 18px;
@@ -200,15 +206,15 @@
       font-family: var(--font-body);
       font-size: 15px;
       font-weight: 600;
-      color: var(--text);
+      color: var(--brand);
       cursor: pointer;
       text-align: center;
       transition: all 0.2s ease;
     }
     .slot-btn:active { transform: scale(0.96); }
     .slot-btn.selected {
-      border-color: var(--accent);
-      background: var(--accent);
+      border-color: var(--brand);
+      background: var(--brand);
       color: white;
     }
     .slot-btn.full {
@@ -234,7 +240,7 @@
       font-weight: 600;
       font-size: 14px;
       margin-bottom: 6px;
-      color: var(--text);
+      color: var(--brand);
     }
     .form-group input {
       width: 100%;
@@ -249,7 +255,7 @@
       transition: border-color 0.2s;
     }
     .form-group input:focus {
-      border-color: var(--accent);
+      border-color: var(--brand);
     }
     .form-group input::placeholder { color: var(--text-muted); }
 
@@ -276,10 +282,11 @@
       justify-content: space-between;
       align-items: center;
       padding: 12px 0 0;
-      border-top: 2px solid var(--text);
+      border-top: 2px solid var(--brand);
       margin-top: 8px;
       font-size: 18px;
       font-weight: 700;
+      color: var(--brand);
     }
 
     /* ========== CONFIRMATION ========== */
@@ -302,6 +309,7 @@
       font-family: var(--font-display);
       font-size: 24px;
       margin-bottom: 8px;
+      color: var(--brand);
     }
     .confirmation p {
       color: var(--text-muted);
@@ -310,8 +318,8 @@
     }
     .order-number-display {
       display: inline-block;
-      background: var(--accent-light);
-      color: var(--accent-dark);
+      background: #f9f0ef;
+      color: var(--brand);
       font-size: 32px;
       font-weight: 700;
       padding: 12px 32px;
@@ -334,7 +342,9 @@
       cursor: pointer;
       transition: all 0.2s ease;
       -webkit-appearance: none;
+      letter-spacing: 0.3px;
     }
+    .btn-primary:hover { background: var(--accent-hover); }
     .btn-primary:active { transform: scale(0.98); }
     .btn-primary:disabled {
       opacity: 0.4;
@@ -376,7 +386,7 @@
     .bottom-bar .total strong {
       display: block;
       font-size: 20px;
-      color: var(--text);
+      color: var(--brand);
     }
     .bottom-bar .btn-primary {
       width: auto;
@@ -393,7 +403,7 @@
       width: 32px;
       height: 32px;
       border: 3px solid var(--border);
-      border-top-color: var(--accent);
+      border-top-color: var(--brand);
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
       margin: 0 auto 12px;
@@ -418,9 +428,8 @@
   <div class="container">
     <!-- HEADER -->
     <div class="header">
-      <div class="header-icon">🚚</div>
-      <h1 id="truckName">Food Truck Belém</h1>
-      <p>Reserva a tua refeição e evita a espera</p>
+      <img src="logo%20V2.png" alt="MARUOKO — Hiroshima Cuisine" class="header-logo">
+      <p class="subtitle">Reserva a tua refeição e evita a espera</p>
     </div>
 
     <!-- STEPPER -->
@@ -505,7 +514,13 @@
 const SUPABASE_URL = 'https://onkgxuxxrquhaqcthazv.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ua2d4dXh4cnF1aGFxY3RoYXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Nzc1MzUsImV4cCI6MjA5MDM1MzUzNX0.utp7mAJQaUP06PnbF9RgEH_oAqhOdl3OyQYBpwmCyvs';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Handle different CDN export styles
+const _sb = window.supabase || window.Supabase;
+if (!_sb || !_sb.createClient) {
+  document.getElementById('loadingState').innerHTML = '<p style="color:red;">Erro: biblioteca Supabase não carregou. Recarrega a página.</p>';
+  throw new Error('Supabase CDN failed to load');
+}
+const supabase = _sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ============================================
 // STATE
@@ -563,7 +578,7 @@ function renderMenu() {
       </div>
       ${item.description ? `<div class="menu-item-desc">${item.description}</div>` : ''}
       <div class="qty-control">
-        <button class="qty-btn minus" onclick="changeQty('${item.id}', -1)" style="visibility:hidden">−</button>
+        <button class="qty-btn minus" onclick="changeQty('${item.id}', -1)">−</button>
         <span class="qty-value" id="qty-${item.id}">0</span>
         <button class="qty-btn plus" onclick="changeQty('${item.id}', 1)">+</button>
       </div>
@@ -633,9 +648,9 @@ function changeQty(itemId, delta) {
   const el = document.getElementById(`item-${itemId}`);
   el.classList.toggle('selected', next > 0);
 
-  // Show/hide minus button
+  // Toggle minus button active state
   const minus = el.querySelector('.minus');
-  minus.style.visibility = next > 0 ? 'visible' : 'hidden';
+  minus.classList.toggle('active', next > 0);
 
   updateBottomBar();
 }

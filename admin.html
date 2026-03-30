@@ -5,29 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MARUOKO · Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
   <style>
     :root {
-      --accent: #b30310;
-      --accent-light: #fce8e9;
-      --accent-dark: #8a020c;
-      --bg: #fef6e8;
+      --accent: #D6B6AE;
+      --accent-hover: #c9a49b;
+      --brand: #8E2124;
+      --bg: #F4F0E8;
       --bg-card: #FFFFFF;
-      --text: #b30310;
-      --text-muted: #8C7A70;
-      --border: #e8d9c4;
+      --text: #4A433F;
+      --text-light: #D5D1CB;
+      --text-muted: #9A938D;
+      --border: #E0D9D0;
       --success: #3A7D44;
-      --success-bg: #E8F5E9;
+      --success-light: #E8F5E9;
       --warning: #E67E22;
       --warning-bg: #FFF3E0;
       --danger: #C0392B;
       --danger-bg: #FDE8E8;
-      --radius: 14px;
-      --radius-sm: 8px;
-      --shadow: 0 2px 12px rgba(44,24,16,0.06);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 1px 8px rgba(74, 67, 63, 0.06);
+      --shadow-lg: 0 4px 24px rgba(74, 67, 63, 0.10);
       --font-body: 'DM Sans', -apple-system, sans-serif;
-      --font-display: 'Playfair Display', Georgia, serif;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -38,11 +39,11 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ========== NAV ========== */
+    /* ========== TOPBAR ========== */
     .topbar {
-      background: var(--text);
+      background: var(--brand);
       color: white;
-      padding: 16px 20px;
+      padding: 14px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -51,28 +52,28 @@
       z-index: 100;
     }
     .topbar h1 {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 600;
+      font-size: 18px;
+      font-weight: 700;
     }
     .topbar .date-display {
-      font-size: 14px;
-      opacity: 0.7;
+      font-size: 13px;
+      opacity: 0.8;
     }
 
+    /* ========== TABS ========== */
     .tabs {
       display: flex;
       background: var(--bg-card);
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1.5px solid var(--border);
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
     }
     .tab {
       flex: 1;
       min-width: 0;
-      padding: 14px 8px;
+      padding: 12px 6px;
       text-align: center;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       color: var(--text-muted);
       background: none;
@@ -81,16 +82,32 @@
       cursor: pointer;
       white-space: nowrap;
       font-family: var(--font-body);
+      transition: all 0.2s;
     }
     .tab.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
+      color: var(--brand);
+      border-bottom-color: var(--brand);
     }
 
     .container {
       max-width: 600px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 16px 20px;
+    }
+
+    /* ========== SECTION HEADER ========== */
+    .section-header {
+      margin-bottom: 16px;
+    }
+    .section-header h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--brand);
+    }
+    .section-header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
     }
 
     /* ========== STATS ========== */
@@ -98,109 +115,133 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     .stat-card {
       background: var(--bg-card);
+      border: 1.5px solid var(--border);
       border-radius: var(--radius-sm);
-      padding: 14px;
+      padding: 12px;
       text-align: center;
-      box-shadow: var(--shadow);
     }
     .stat-value {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 700;
-      color: var(--accent);
+      color: var(--brand);
     }
     .stat-label {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-muted);
       margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    /* ========== SLOT GROUP ========== */
-    .slot-group {
-      margin-bottom: 20px;
+    /* ========== REFRESH BAR ========== */
+    .refresh-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
     }
+    .refresh-bar .last-update {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .refresh-btn {
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      background: var(--bg-card);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .refresh-btn:active { transform: scale(0.96); }
+
+    /* ========== SLOT GROUP ========== */
+    .slot-group { margin-bottom: 16px; }
     .slot-group-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 0;
+      padding: 8px 0;
       font-weight: 700;
-      font-size: 16px;
+      font-size: 15px;
+      color: var(--brand);
       border-bottom: 2px solid var(--border);
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     .slot-group-header .badge {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
-      padding: 4px 10px;
+      padding: 3px 10px;
       border-radius: 20px;
-      background: var(--accent-light);
-      color: var(--accent-dark);
+      background: #f9f0ef;
+      color: var(--brand);
     }
 
     /* ========== ORDER CARD ========== */
     .order-card {
       background: var(--bg-card);
+      border: 1.5px solid var(--border);
       border-radius: var(--radius-sm);
-      padding: 14px 16px;
+      padding: 12px 14px;
       margin-bottom: 8px;
-      box-shadow: var(--shadow);
       display: flex;
       align-items: flex-start;
       gap: 12px;
+      transition: border-color 0.2s;
+    }
+    .order-card.highlight {
+      border-color: var(--brand);
+      animation: pulse 0.5s ease;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.01); }
     }
     .order-number {
       font-weight: 700;
-      font-size: 18px;
-      color: var(--accent);
+      font-size: 17px;
+      color: var(--brand);
       min-width: 48px;
     }
     .order-info { flex: 1; min-width: 0; }
-    .order-name {
-      font-weight: 600;
-      font-size: 15px;
-    }
-    .order-items-list {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-    .order-phone {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
+    .order-name { font-weight: 600; font-size: 15px; color: var(--text); }
+    .order-items-list { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+    .order-phone { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
     .order-actions {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
       align-items: flex-end;
     }
 
     /* ========== STATUS BADGES ========== */
     .status-badge {
       display: inline-block;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
-      padding: 4px 10px;
+      padding: 3px 8px;
       border-radius: 20px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
     .status-pending { background: var(--warning-bg); color: var(--warning); }
     .status-confirmed { background: #E3F2FD; color: #1565C0; }
-    .status-picked_up { background: var(--success-bg); color: var(--success); }
+    .status-picked_up { background: var(--success-light); color: var(--success); }
     .status-no_show { background: var(--danger-bg); color: var(--danger); }
     .status-cancelled { background: #eee; color: #999; }
 
     /* ========== ACTION BUTTONS ========== */
     .action-btn {
-      padding: 6px 12px;
+      padding: 5px 10px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
       border: none;
       cursor: pointer;
@@ -217,40 +258,45 @@
       justify-content: space-between;
       align-items: center;
       background: var(--bg-card);
-      padding: 14px 16px;
+      border: 1.5px solid var(--border);
+      padding: 12px 16px;
       border-radius: var(--radius-sm);
       margin-bottom: 8px;
-      box-shadow: var(--shadow);
     }
-    .prep-item-name { font-weight: 600; }
+    .prep-item-name { font-weight: 600; color: var(--text); }
     .prep-item-qty {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 700;
-      color: var(--accent);
+      color: var(--brand);
     }
 
     /* ========== MENU ADMIN ========== */
     .menu-admin-item {
       background: var(--bg-card);
+      border: 1.5px solid var(--border);
       padding: 14px 16px;
       border-radius: var(--radius-sm);
       margin-bottom: 8px;
-      box-shadow: var(--shadow);
+    }
+    .menu-admin-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
     .menu-admin-info { flex: 1; }
-    .menu-admin-info .name { font-weight: 600; }
-    .menu-admin-info .price { color: var(--text-muted); font-size: 14px; }
+    .menu-admin-info .name { font-weight: 600; color: var(--text); }
+    .menu-admin-info .desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+    .menu-admin-info .price { font-weight: 700; color: var(--brand); font-size: 15px; margin-top: 4px; }
     .toggle-switch {
-      width: 48px;
-      height: 28px;
-      border-radius: 14px;
-      background: #ccc;
+      width: 44px;
+      height: 26px;
+      border-radius: 13px;
+      background: var(--text-light);
       position: relative;
       cursor: pointer;
       transition: background 0.2s;
+      flex-shrink: 0;
+      margin-left: 12px;
     }
     .toggle-switch.on { background: var(--success); }
     .toggle-switch::after {
@@ -258,13 +304,133 @@
       position: absolute;
       top: 3px;
       left: 3px;
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       background: white;
       transition: transform 0.2s;
     }
-    .toggle-switch.on::after { transform: translateX(20px); }
+    .toggle-switch.on::after { transform: translateX(18px); }
+
+    /* Edit form inside menu item */
+    .menu-edit-form {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .menu-edit-form.open { display: block; }
+    .menu-edit-row {
+      margin-bottom: 10px;
+    }
+    .menu-edit-row label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--brand);
+      margin-bottom: 4px;
+    }
+    .menu-edit-row input,
+    .menu-edit-row textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .menu-edit-row input:focus,
+    .menu-edit-row textarea:focus { border-color: var(--brand); }
+    .menu-edit-row textarea { resize: vertical; min-height: 60px; }
+    .menu-edit-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-save {
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--brand);
+      color: white;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-cancel {
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-edit {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    /* ========== SLOTS ADMIN ========== */
+    .slot-admin-item {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .slot-admin-time {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--brand);
+      min-width: 50px;
+    }
+    .slot-admin-capacity {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .slot-admin-capacity label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .slot-capacity-input {
+      width: 56px;
+      padding: 6px 8px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--brand);
+      text-align: center;
+      background: var(--bg);
+      outline: none;
+    }
+    .slot-capacity-input:focus { border-color: var(--brand); }
+    .slot-admin-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
     /* ========== TABS CONTENT ========== */
     .tab-content { display: none; }
@@ -276,45 +442,69 @@
       color: var(--text-muted);
       font-size: 14px;
     }
-    .empty-state .icon { font-size: 40px; margin-bottom: 8px; }
+    .empty-state .icon { font-size: 36px; margin-bottom: 8px; }
 
-    /* ========== REFRESH ========== */
-    .refresh-bar {
+    /* ========== NOTIFICATION BADGE ========== */
+    .new-order-toast {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: var(--brand);
+      color: white;
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 14px;
+      z-index: 200;
+      box-shadow: var(--shadow-lg);
+      transition: transform 0.4s ease;
+    }
+    .new-order-toast.visible {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ========== SOUND TOGGLE ========== */
+    .sound-toggle {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
-    }
-    .refresh-bar .last-update {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-    .refresh-btn {
-      padding: 8px 16px;
+      gap: 6px;
+      padding: 6px 12px;
       border-radius: 6px;
-      border: 1.5px solid var(--border);
-      background: var(--bg-card);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      background: transparent;
+      color: white;
       font-family: var(--font-body);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
     }
+    .sound-toggle.muted { opacity: 0.5; }
   </style>
 </head>
 <body>
 
   <!-- TOPBAR -->
   <div class="topbar">
-    <h1>🇯🇵 MARUOKO Dashboard</h1>
-    <div class="date-display" id="dateDisplay"></div>
+    <h1>MARUOKO</h1>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">
+        <span id="soundIcon">🔔</span> Son
+      </button>
+      <div class="date-display" id="dateDisplay"></div>
+    </div>
   </div>
 
   <!-- TABS -->
   <div class="tabs">
     <button class="tab active" onclick="switchTab('orders')">Encomendas</button>
-    <button class="tab" onclick="switchTab('prep')">Preparação</button>
+    <button class="tab" onclick="switchTab('prep')">Preparacao</button>
+    <button class="tab" onclick="switchTab('slots')">Horarios</button>
     <button class="tab" onclick="switchTab('menu')">Menu</button>
   </div>
+
+  <!-- NEW ORDER TOAST -->
+  <div class="new-order-toast" id="newOrderToast">Nova reserva recebida!</div>
 
   <div class="container">
 
@@ -322,7 +512,7 @@
     <div class="tab-content active" id="tab-orders">
       <div class="refresh-bar">
         <span class="last-update" id="lastUpdate">—</span>
-        <button class="refresh-btn" onclick="loadOrders()">↻ Atualizar</button>
+        <button class="refresh-btn" onclick="loadOrders()">Atualizar</button>
       </div>
       <div class="stats-row" id="statsRow"></div>
       <div id="ordersContainer"></div>
@@ -330,15 +520,28 @@
 
     <!-- TAB: PREP -->
     <div class="tab-content" id="tab-prep">
-      <h3 style="margin-bottom:16px; font-family: var(--font-display);">Lista de preparação</h3>
-      <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Quantidades totais a preparar hoje</p>
+      <div class="section-header">
+        <h3>Preparacao</h3>
+        <p>Quantidades totais a preparar hoje</p>
+      </div>
       <div id="prepList"></div>
+    </div>
+
+    <!-- TAB: SLOTS -->
+    <div class="tab-content" id="tab-slots">
+      <div class="section-header">
+        <h3>Horarios</h3>
+        <p>Gere os creneaux e a capacidade</p>
+      </div>
+      <div id="slotsAdmin"></div>
     </div>
 
     <!-- TAB: MENU -->
     <div class="tab-content" id="tab-menu">
-      <h3 style="margin-bottom:16px; font-family: var(--font-display);">Gerir menu</h3>
-      <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Ativa/desativa pratos</p>
+      <div class="section-header">
+        <h3>Menu</h3>
+        <p>Gere os pratos, precos e descricoes</p>
+      </div>
       <div id="menuAdmin"></div>
     </div>
 
@@ -349,7 +552,7 @@
 // CONFIG
 // ============================================
 const SUPABASE_URL = 'https://onkgxuxxrquhaqcthazv.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ua2d4dXh4cnF1aGFxY3RoYXp2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDc3NzUzNSwiZXhwIjoyMDkwMzUzNTM1fQ.W6FN-vGvlz5M2F1JCJDOaxYM1XYyZCTG82ngjNacNyI'; // ⚠️ service_role for admin
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ua2d4dXh4cnF1aGFxY3RoYXp2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDc3NzUzNSwiZXhwIjoyMDkwMzUzNTM1fQ.W6FN-vGvlz5M2F1JCJDOaxYM1XYyZCTG82ngjNacNyI';
 const _sb = window.supabase || window.Supabase;
 const supabase = _sb.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -357,20 +560,57 @@ const supabase = _sb.createClient(SUPABASE_URL, SUPABASE_KEY);
 // STATE
 // ============================================
 let orders = [];
-let orderItems = [];
 let allMenuItems = [];
+let slotConfigs = [];
+let previousOrderCount = -1;
+let soundEnabled = true;
 const today = new Date().toISOString().split('T')[0];
+
+// Audio context for notification sound
+let audioCtx;
+function playNotificationSound() {
+  if (!soundEnabled) return;
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Play two short beeps
+    [0, 0.15].forEach(delay => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.frequency.value = 880;
+      osc.type = 'sine';
+      gain.gain.value = 0.3;
+      osc.start(audioCtx.currentTime + delay);
+      osc.stop(audioCtx.currentTime + delay + 0.1);
+    });
+  } catch (e) { console.log('Sound error:', e); }
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  const btn = document.getElementById('soundToggle');
+  const icon = document.getElementById('soundIcon');
+  btn.classList.toggle('muted', !soundEnabled);
+  icon.textContent = soundEnabled ? '🔔' : '🔕';
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('newOrderToast');
+  toast.textContent = msg || 'Nova reserva recebida!';
+  toast.classList.add('visible');
+  setTimeout(() => toast.classList.remove('visible'), 3000);
+}
 
 // ============================================
 // INIT
 // ============================================
 async function init() {
   document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('pt-PT', {
-    weekday: 'long', day: 'numeric', month: 'long'
+    weekday: 'short', day: 'numeric', month: 'short'
   });
-  await Promise.all([loadOrders(), loadMenu()]);
-  // Auto-refresh every 30s
-  setInterval(loadOrders, 30000);
+  await Promise.all([loadOrders(), loadMenu(), loadSlots()]);
+  setInterval(loadOrders, 15000);
 }
 
 // ============================================
@@ -386,6 +626,14 @@ async function loadOrders() {
       .order('created_at');
 
     if (error) throw error;
+
+    const newCount = (data || []).length;
+    if (previousOrderCount >= 0 && newCount > previousOrderCount) {
+      playNotificationSound();
+      showToast(`Nova reserva! (${newCount} total)`);
+    }
+    previousOrderCount = newCount;
+
     orders = data || [];
     renderOrders();
     renderPrep();
@@ -402,7 +650,6 @@ async function loadMenu() {
       .from('menu_items')
       .select('*')
       .order('position');
-
     if (error) throw error;
     allMenuItems = data || [];
     renderMenuAdmin();
@@ -411,11 +658,24 @@ async function loadMenu() {
   }
 }
 
+async function loadSlots() {
+  try {
+    const { data, error } = await supabase
+      .from('slot_config')
+      .select('*')
+      .order('position');
+    if (error) throw error;
+    slotConfigs = data || [];
+    renderSlotsAdmin();
+  } catch (err) {
+    console.error('Load slots error:', err);
+  }
+}
+
 // ============================================
 // RENDER: ORDERS
 // ============================================
 function renderOrders() {
-  // Stats
   const total = orders.length;
   const pending = orders.filter(o => o.status === 'pending').length;
   const pickedUp = orders.filter(o => o.status === 'picked_up').length;
@@ -433,12 +693,11 @@ function renderOrders() {
       <div class="stat-label">Pendentes</div>
     </div>
     <div class="stat-card">
-      <div class="stat-value">€${revenue.toFixed(0)}</div>
+      <div class="stat-value">${revenue.toFixed(0)}€</div>
       <div class="stat-label">Receita</div>
     </div>
   `;
 
-  // Group by slot
   const grouped = {};
   orders.forEach(o => {
     if (!grouped[o.slot_time]) grouped[o.slot_time] = [];
@@ -461,7 +720,7 @@ function renderOrders() {
     .map(([time, slotOrders]) => `
       <div class="slot-group">
         <div class="slot-group-header">
-          <span>⏰ ${time}</span>
+          <span>${time}</span>
           <span class="badge">${slotOrders.length} reserva${slotOrders.length > 1 ? 's' : ''}</span>
         </div>
         ${slotOrders.map(renderOrderCard).join('')}
@@ -483,8 +742,8 @@ function renderOrderCard(order) {
   };
 
   const actions = order.status === 'pending' || order.status === 'confirmed' ? `
-    <button class="action-btn btn-pickup" onclick="updateStatus('${order.id}', 'picked_up')">✓ Levantou</button>
-    <button class="action-btn btn-noshow" onclick="updateStatus('${order.id}', 'no_show')">✗ No-show</button>
+    <button class="action-btn btn-pickup" onclick="updateStatus('${order.id}', 'picked_up')">Levantou</button>
+    <button class="action-btn btn-noshow" onclick="updateStatus('${order.id}', 'no_show')">No-show</button>
   ` : '';
 
   return `
@@ -493,7 +752,7 @@ function renderOrderCard(order) {
       <div class="order-info">
         <div class="order-name">${order.customer_name}</div>
         <div class="order-items-list">${items}</div>
-        <div class="order-phone">📞 ${order.customer_phone}</div>
+        <div class="order-phone">${order.customer_phone}</div>
       </div>
       <div class="order-actions">
         <span class="status-badge status-${order.status}">${statusLabels[order.status]}</span>
@@ -538,19 +797,93 @@ function renderPrep() {
 }
 
 // ============================================
+// RENDER: SLOTS ADMIN
+// ============================================
+function renderSlotsAdmin() {
+  const container = document.getElementById('slotsAdmin');
+
+  // Deduplicate: keep one entry per slot_time (prefer day_of_week: null = every day)
+  const seen = {};
+  const uniqueSlots = [];
+  slotConfigs.forEach(slot => {
+    if (!seen[slot.slot_time]) {
+      seen[slot.slot_time] = slot;
+      uniqueSlots.push(slot);
+    } else if (slot.day_of_week === null) {
+      // Prefer the "every day" entry
+      const idx = uniqueSlots.indexOf(seen[slot.slot_time]);
+      uniqueSlots[idx] = slot;
+      seen[slot.slot_time] = slot;
+    }
+  });
+
+  if (uniqueSlots.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">⏰</div>
+        <p>Nenhum horario configurado</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = uniqueSlots.map(slot => `
+    <div class="slot-admin-item">
+      <div class="slot-admin-time">${slot.slot_time}</div>
+      <div class="slot-admin-capacity">
+        <label>pax</label>
+        <input type="number" class="slot-capacity-input"
+               value="${slot.max_orders}" min="0" max="50"
+               onchange="updateSlotCapacity('${slot.id}', this.value)">
+      </div>
+      <div class="slot-admin-actions">
+        <div class="toggle-switch ${slot.is_active ? 'on' : ''}"
+             onclick="toggleSlot('${slot.id}', ${!slot.is_active})"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================
 // RENDER: MENU ADMIN
 // ============================================
 function renderMenuAdmin() {
   document.getElementById('menuAdmin').innerHTML = allMenuItems.map(item => `
-    <div class="menu-admin-item">
-      <div class="menu-admin-info">
-        <div class="name">${item.name}</div>
-        <div class="price">€${item.price.toFixed(2)}</div>
+    <div class="menu-admin-item" id="menu-item-${item.id}">
+      <div class="menu-admin-top">
+        <div class="menu-admin-info">
+          <div class="name">${item.name}</div>
+          ${item.description ? `<div class="desc">${item.description}</div>` : ''}
+          <div class="price">${item.price.toFixed(2)}€</div>
+        </div>
+        <div class="toggle-switch ${item.available ? 'on' : ''}"
+             onclick="toggleItem('${item.id}', ${!item.available})"></div>
       </div>
-      <div class="toggle-switch ${item.available ? 'on' : ''}" 
-           onclick="toggleItem('${item.id}', ${!item.available})"></div>
+      <button class="btn-edit" onclick="toggleEditForm('${item.id}')">Editar</button>
+      <div class="menu-edit-form" id="edit-${item.id}">
+        <div class="menu-edit-row">
+          <label>Nome</label>
+          <input type="text" id="edit-name-${item.id}" value="${item.name}">
+        </div>
+        <div class="menu-edit-row">
+          <label>Descricao</label>
+          <textarea id="edit-desc-${item.id}">${item.description || ''}</textarea>
+        </div>
+        <div class="menu-edit-row">
+          <label>Preco (€)</label>
+          <input type="number" step="0.50" min="0" id="edit-price-${item.id}" value="${item.price}">
+        </div>
+        <div class="menu-edit-actions">
+          <button class="btn-save" onclick="saveMenuItem('${item.id}')">Guardar</button>
+          <button class="btn-cancel" onclick="toggleEditForm('${item.id}')">Cancelar</button>
+        </div>
+      </div>
     </div>
   `).join('');
+}
+
+function toggleEditForm(itemId) {
+  const form = document.getElementById(`edit-${itemId}`);
+  form.classList.toggle('open');
 }
 
 // ============================================
@@ -562,7 +895,6 @@ async function updateStatus(orderId, status) {
       .from('orders')
       .update({ status })
       .eq('id', orderId);
-
     if (error) throw error;
     await loadOrders();
   } catch (err) {
@@ -577,15 +909,71 @@ async function toggleItem(itemId, available) {
       .from('menu_items')
       .update({ available })
       .eq('id', itemId);
-
     if (error) throw error;
-
-    // Update local state
     const item = allMenuItems.find(m => m.id === itemId);
     if (item) item.available = available;
     renderMenuAdmin();
   } catch (err) {
     console.error('Toggle error:', err);
+    alert('Erro ao atualizar');
+  }
+}
+
+async function saveMenuItem(itemId) {
+  const name = document.getElementById(`edit-name-${itemId}`).value.trim();
+  const description = document.getElementById(`edit-desc-${itemId}`).value.trim();
+  const price = parseFloat(document.getElementById(`edit-price-${itemId}`).value);
+
+  if (!name || isNaN(price)) {
+    alert('Preenche o nome e o preco');
+    return;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('menu_items')
+      .update({ name, description, price })
+      .eq('id', itemId);
+    if (error) throw error;
+
+    const item = allMenuItems.find(m => m.id === itemId);
+    if (item) { item.name = name; item.description = description; item.price = price; }
+    renderMenuAdmin();
+  } catch (err) {
+    console.error('Save menu error:', err);
+    alert('Erro ao guardar');
+  }
+}
+
+async function updateSlotCapacity(slotId, value) {
+  const maxOrders = parseInt(value);
+  if (isNaN(maxOrders) || maxOrders < 0) return;
+  try {
+    const { error } = await supabase
+      .from('slot_config')
+      .update({ max_orders: maxOrders })
+      .eq('id', slotId);
+    if (error) throw error;
+    const slot = slotConfigs.find(s => s.id === slotId);
+    if (slot) slot.max_orders = maxOrders;
+  } catch (err) {
+    console.error('Update slot error:', err);
+    alert('Erro ao atualizar');
+  }
+}
+
+async function toggleSlot(slotId, isActive) {
+  try {
+    const { error } = await supabase
+      .from('slot_config')
+      .update({ is_active: isActive })
+      .eq('id', slotId);
+    if (error) throw error;
+    const slot = slotConfigs.find(s => s.id === slotId);
+    if (slot) slot.is_active = isActive;
+    renderSlotsAdmin();
+  } catch (err) {
+    console.error('Toggle slot error:', err);
     alert('Erro ao atualizar');
   }
 }
@@ -596,7 +984,6 @@ async function toggleItem(itemId, available) {
 function switchTab(tabName) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-
   event.target.classList.add('active');
   document.getElementById(`tab-${tabName}`).classList.add('active');
 }

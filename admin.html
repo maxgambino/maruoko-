@@ -384,6 +384,38 @@
       cursor: pointer;
       margin-top: 6px;
     }
+    .btn-delete {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1.5px solid var(--danger-bg);
+      background: var(--danger-bg);
+      color: var(--danger);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 6px;
+      margin-left: 6px;
+    }
+    .btn-add {
+      width: 100%;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      border: 2px dashed var(--border);
+      background: transparent;
+      color: var(--brand);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    .btn-add:hover { border-color: var(--brand); background: #f9f0ef; }
+    .menu-admin-item.new-item {
+      border-color: var(--brand);
+      border-style: dashed;
+    }
 
     /* ========== SLOTS ADMIN ========== */
     .slot-admin-item {
@@ -541,6 +573,31 @@
       <div class="section-header">
         <h3>Menu</h3>
         <p>Gere os pratos, precos e descricoes</p>
+      </div>
+      <button class="btn-add" onclick="showAddItemForm()">+ Adicionar prato</button>
+      <div id="newItemForm" style="display:none;">
+        <div class="menu-admin-item new-item">
+          <div class="menu-edit-row">
+            <label>Nome</label>
+            <input type="text" id="new-item-name" placeholder="Nome do prato">
+          </div>
+          <div class="menu-edit-row">
+            <label>Descricao</label>
+            <textarea id="new-item-desc" placeholder="Descricao do prato"></textarea>
+          </div>
+          <div class="menu-edit-row">
+            <label>Preco (€)</label>
+            <input type="number" step="0.50" min="0" id="new-item-price" placeholder="0.00">
+          </div>
+          <div class="menu-edit-row">
+            <label>Posicao (ordem)</label>
+            <input type="number" min="1" id="new-item-position" placeholder="1">
+          </div>
+          <div class="menu-edit-actions" style="margin-top:10px;">
+            <button class="btn-save" onclick="addMenuItem()">Adicionar</button>
+            <button class="btn-cancel" onclick="hideAddItemForm()">Cancelar</button>
+          </div>
+        </div>
       </div>
       <div id="menuAdmin"></div>
     </div>
@@ -858,7 +915,10 @@ function renderMenuAdmin() {
         <div class="toggle-switch ${item.available ? 'on' : ''}"
              onclick="toggleItem('${item.id}', ${!item.available})"></div>
       </div>
-      <button class="btn-edit" onclick="toggleEditForm('${item.id}')">Editar</button>
+      <div style="display:flex;">
+        <button class="btn-edit" onclick="toggleEditForm('${item.id}')">Editar</button>
+        <button class="btn-delete" onclick="deleteMenuItem('${item.id}', '${item.name.replace(/'/g, "\\'")}')">Eliminar</button>
+      </div>
       <div class="menu-edit-form" id="edit-${item.id}">
         <div class="menu-edit-row">
           <label>Nome</label>
@@ -884,6 +944,66 @@ function renderMenuAdmin() {
 function toggleEditForm(itemId) {
   const form = document.getElementById(`edit-${itemId}`);
   form.classList.toggle('open');
+}
+
+function showAddItemForm() {
+  document.getElementById('newItemForm').style.display = 'block';
+  document.getElementById('new-item-name').focus();
+}
+
+function hideAddItemForm() {
+  document.getElementById('newItemForm').style.display = 'none';
+  document.getElementById('new-item-name').value = '';
+  document.getElementById('new-item-desc').value = '';
+  document.getElementById('new-item-price').value = '';
+  document.getElementById('new-item-position').value = '';
+}
+
+async function addMenuItem() {
+  const name = document.getElementById('new-item-name').value.trim();
+  const description = document.getElementById('new-item-desc').value.trim();
+  const price = parseFloat(document.getElementById('new-item-price').value);
+  const position = parseInt(document.getElementById('new-item-position').value) || (allMenuItems.length + 1);
+
+  if (!name || isNaN(price)) {
+    alert('Preenche o nome e o preco');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('menu_items')
+      .insert({ name, description: description || null, price, position, available: true })
+      .select()
+      .single();
+
+    if (error) throw error;
+    allMenuItems.push(data);
+    allMenuItems.sort((a, b) => a.position - b.position);
+    renderMenuAdmin();
+    hideAddItemForm();
+  } catch (err) {
+    console.error('Add menu item error:', err);
+    alert('Erro ao adicionar');
+  }
+}
+
+async function deleteMenuItem(itemId, itemName) {
+  if (!confirm(`Eliminar "${itemName}"? Esta acao e irreversivel.`)) return;
+
+  try {
+    const { error } = await supabase
+      .from('menu_items')
+      .delete()
+      .eq('id', itemId);
+
+    if (error) throw error;
+    allMenuItems = allMenuItems.filter(m => m.id !== itemId);
+    renderMenuAdmin();
+  } catch (err) {
+    console.error('Delete menu item error:', err);
+    alert('Erro ao eliminar');
+  }
 }
 
 // ============================================

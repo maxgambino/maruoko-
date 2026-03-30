@@ -440,6 +440,49 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ========== CLOSED STATE ========== */
+    .closed-state {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .closed-state img {
+      width: 140px;
+      height: auto;
+      margin-bottom: 16px;
+    }
+    .closed-state h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--brand);
+      margin-bottom: 8px;
+    }
+    .closed-state p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .closed-state .schedule {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-top: 20px;
+      text-align: left;
+    }
+    .closed-state .schedule-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 14px;
+    }
+    .closed-state .schedule-row + .schedule-row {
+      border-top: 1px solid var(--border);
+    }
+    .closed-state .schedule-row .day { font-weight: 600; color: var(--text); }
+    .closed-state .schedule-row .status { color: var(--text-muted); }
+    .closed-state .schedule-row.highlight .day { color: var(--brand); }
+    .closed-state .schedule-row.highlight .status { color: var(--brand); font-weight: 600; }
+
     /* ========== ERROR ========== */
     .error-msg {
       background: #FDE8E8;
@@ -470,6 +513,22 @@
 
     <!-- ERROR -->
     <div class="error-msg" id="errorMsg"></div>
+
+    <!-- CLOSED STATE -->
+    <div class="closed-state" id="closedState" style="display:none;">
+      <img src="Sans%20titre%20(315%20x%20250%20px).png" alt="Mascotte Maruoko">
+      <h2 id="closedTitle">Reservas apenas ao Sabado!</h2>
+      <p id="closedMsg">O sistema de reservas esta aberto apenas aos sabados.</p>
+      <div class="schedule">
+        <div class="schedule-row"><span class="day">Segunda</span><span class="status">Sem reserva</span></div>
+        <div class="schedule-row"><span class="day">Terca</span><span class="status">Fechado</span></div>
+        <div class="schedule-row"><span class="day">Quarta</span><span class="status">Sem reserva</span></div>
+        <div class="schedule-row"><span class="day">Quinta</span><span class="status">Sem reserva</span></div>
+        <div class="schedule-row"><span class="day">Sexta</span><span class="status">Sem reserva</span></div>
+        <div class="schedule-row highlight"><span class="day">Sabado</span><span class="status">Reservas online</span></div>
+        <div class="schedule-row"><span class="day">Domingo</span><span class="status">Fechado</span></div>
+      </div>
+    </div>
 
     <!-- LOADING -->
     <div class="loading" id="loadingState">
@@ -573,13 +632,26 @@ let currentStep = 1;
 // ============================================
 async function init() {
   try {
+    // Check day of week: 0=Sun, 1=Mon, ..., 6=Sat
+    const dayOfWeek = new Date().getDay();
+    const isSaturday = dayOfWeek === 6;
+
+    // If not Saturday, show closed state
+    if (!isSaturday) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('stepper').style.display = 'none';
+      document.getElementById('closedState').style.display = 'block';
+      document.getElementById('bottomBar').style.display = 'none';
+      return;
+    }
+
     // Load menu
     const { data: menu, error: menuErr } = await supabase
       .from('menu_items')
       .select('*')
       .eq('available', true)
       .order('position');
-    
+
     if (menuErr) throw menuErr;
     menuItems = menu || [];
 

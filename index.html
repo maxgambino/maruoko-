@@ -112,6 +112,20 @@
       margin-bottom: 16px;
     }
 
+    /* ========== MENU CATEGORIES ========== */
+    .menu-category {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--brand);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin: 20px 0 8px;
+      padding-bottom: 6px;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .menu-category:first-child { margin-top: 0; }
+
     /* ========== MENU ITEMS ========== */
     .menu-item {
       background: var(--bg-card);
@@ -590,22 +604,41 @@ async function init() {
 // ============================================
 // RENDERING
 // ============================================
+function getCategory(item) {
+  const n = item.name.toLowerCase();
+  if (n.includes('okonomiyaki')) return 'Okonomiyaki';
+  if (n.includes('topping')) return 'Toppings';
+  if (n.includes('mochi')) return 'Dessert';
+  return 'Drinks';
+}
+
 function renderMenu() {
   const list = document.getElementById('menuList');
-  list.innerHTML = menuItems.map(item => `
-    <div class="menu-item" id="item-${item.id}" data-id="${item.id}">
-      <div class="menu-item-top">
-        <span class="menu-item-name">${item.name}</span>
-        <span class="menu-item-price">€${item.price.toFixed(2)}</span>
-      </div>
-      ${item.description ? `<div class="menu-item-desc">${item.description}</div>` : ''}
-      <div class="qty-control">
-        <button class="qty-btn minus" onclick="changeQty('${item.id}', -1)">−</button>
-        <span class="qty-value" id="qty-${item.id}">0</span>
-        <button class="qty-btn plus" onclick="changeQty('${item.id}', 1)">+</button>
-      </div>
-    </div>
-  `).join('');
+  let html = '';
+  let lastCat = '';
+
+  menuItems.forEach(item => {
+    const cat = getCategory(item);
+    if (cat !== lastCat) {
+      html += `<div class="menu-category">${cat}</div>`;
+      lastCat = cat;
+    }
+    html += `
+      <div class="menu-item" id="item-${item.id}" data-id="${item.id}">
+        <div class="menu-item-top">
+          <span class="menu-item-name">${item.name}</span>
+          <span class="menu-item-price">€${item.price.toFixed(2)}</span>
+        </div>
+        ${item.description ? `<div class="menu-item-desc">${item.description}</div>` : ''}
+        <div class="qty-control">
+          <button class="qty-btn minus" onclick="changeQty('${item.id}', -1)">−</button>
+          <span class="qty-value" id="qty-${item.id}">0</span>
+          <button class="qty-btn plus" onclick="changeQty('${item.id}', 1)">+</button>
+        </div>
+      </div>`;
+  });
+
+  list.innerHTML = html;
 }
 
 function renderSlots() {

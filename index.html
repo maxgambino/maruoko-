@@ -349,11 +349,11 @@
     }
 
     .btn-back {
-      padding: 14px 16px;
+      padding: 12px 16px;
       border: 1.5px solid var(--border);
       border-radius: var(--radius);
       background: var(--bg-card);
-      color: var(--text);
+      color: var(--brand);
       font-family: var(--font-body);
       font-size: 15px;
       font-weight: 600;
@@ -385,25 +385,30 @@
       right: 0;
       background: var(--bg-card);
       border-top: 1px solid var(--border);
-      padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+      padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
       display: flex;
       align-items: center;
       gap: 10px;
       z-index: 100;
     }
     .bottom-bar .total {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-muted);
     }
     .bottom-bar .total strong {
       display: block;
-      font-size: 20px;
+      font-size: 18px;
       color: var(--brand);
     }
-    .bottom-bar .btn-primary,
+    .bottom-bar .btn-primary {
+      flex: 1;
+      padding: 12px 0;
+      font-size: 15px;
+    }
     .bottom-bar .btn-back {
       flex: 1;
-      padding: 14px 0;
+      padding: 12px 0;
+      font-size: 15px;
     }
 
     /* ========== LOADING ========== */
@@ -511,7 +516,7 @@
 
   <!-- BOTTOM BAR (steps 1-2) -->
   <div class="bottom-bar" id="bottomBar" style="display:none;">
-    <button class="btn-back" id="btnBack" onclick="prevStep()" style="display:none;">← Voltar</button>
+    <button class="btn-back" id="btnBack" onclick="prevStep()" style="display:none;">Voltar</button>
     <div class="total" id="totalWrap">
       Total<br>
       <strong id="totalDisplay">€0.00</strong>
@@ -703,12 +708,12 @@ function updateBottomBar() {
     const hasItems = getItemCount() > 0;
     btnNext.disabled = !hasItems;
     btnNext.classList.toggle('ready', hasItems);
-    btnNext.textContent = 'Escolher horário →';
+    btnNext.textContent = 'Escolher horário';
   } else if (currentStep === 2) {
     const hasSlot = !!selectedSlot;
     btnNext.disabled = !hasSlot;
     btnNext.classList.toggle('ready', hasSlot);
-    btnNext.textContent = 'Seguinte →';
+    btnNext.textContent = 'Seguinte';
   }
 }
 

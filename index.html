@@ -878,6 +878,19 @@ function resetApp() {
 }
 
 // ============================================
+// CONFIRM BUTTON STATE
+// ============================================
+function updateConfirmBtn() {
+  const name = document.getElementById('customerName').value.trim();
+  const phone = document.getElementById('customerPhone').value.trim();
+  const btn = document.getElementById('btnConfirm');
+  const filled = name.length > 0 && phone.length > 0;
+  btn.classList.toggle('ready', filled);
+}
+document.getElementById('customerName').addEventListener('input', updateConfirmBtn);
+document.getElementById('customerPhone').addEventListener('input', updateConfirmBtn);
+
+// ============================================
 // GO
 // ============================================
 init();

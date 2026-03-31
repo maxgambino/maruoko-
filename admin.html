@@ -1343,11 +1343,11 @@
       <div class="stats-row" id="statsRow"></div>
       <input type="text" class="search-input" id="orderSearch" placeholder="Pesquisar por nome ou #numero..." oninput="filterOrders()">
       <div class="filter-pills" id="filterPills">
-        <button class="filter-pill active" onclick="setStatusFilter('all', this)">Todas</button>
-        <button class="filter-pill" onclick="setStatusFilter('pending', this)">Pendentes</button>
+        <button class="filter-pill active" onclick="setStatusFilter('pending', this)">Pendentes</button>
         <button class="filter-pill" onclick="setStatusFilter('picked_up', this)">Levantadas</button>
         <button class="filter-pill" onclick="setStatusFilter('no_show', this)">No-show</button>
         <button class="filter-pill" onclick="setStatusFilter('cancelled', this)">Canceladas</button>
+        <button class="filter-pill" onclick="setStatusFilter('all', this)">Todas</button>
       </div>
       <div id="ordersContainer"></div>
     </div>
@@ -1553,7 +1553,7 @@ let restaurantConfig = {};
 let previousOrderCount = -1;
 let soundEnabled = true;
 let searchQuery = '';
-let statusFilter = 'all';
+let statusFilter = 'pending';
 let modalCallback = null;
 const today = new Date().toISOString().split('T')[0];
 let selectedOrderDate = today;

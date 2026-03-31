@@ -247,6 +247,7 @@
       margin-bottom: 6px;
       color: var(--brand);
     }
+    .form-group label .required { color: var(--danger); margin-left: 2px; }
 
     /* Phone input with country selector */
     .phone-input-wrap {
@@ -765,11 +766,11 @@
       <div class="section-subtitle">O teu nome e telefone para confirmar</div>
 
       <div class="form-group">
-        <label for="customerName">Nome</label>
+        <label for="customerName">Nome <span class="required">*</span></label>
         <input type="text" id="customerName" placeholder="O teu nome" autocomplete="name">
       </div>
       <div class="form-group">
-        <label for="customerPhone">Telemóvel</label>
+        <label for="customerPhone">Telemóvel <span class="required">*</span></label>
         <div class="phone-input-wrap">
           <button type="button" class="country-select" id="countrySelect" onclick="toggleCountryDropdown()">
             <span id="csFlag">🇵🇹</span> <span id="csDial">+351</span> <span class="cs-arrow">▾</span>
@@ -782,7 +783,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="customerEmail">Email</label>
+        <label for="customerEmail">Email <span class="required">*</span></label>
         <input type="email" id="customerEmail" placeholder="o.teu@email.com" autocomplete="email">
       </div>
 

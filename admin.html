@@ -163,6 +163,53 @@
       border-color: var(--brand);
     }
 
+    /* ========== DATE PICKER ========== */
+    .date-picker-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .date-picker-input {
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--brand);
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .date-nav-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background: var(--bg-card);
+      font-size: 14px;
+      color: var(--brand);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .date-nav-btn:active { transform: scale(0.92); }
+    .date-today-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1.5px solid var(--brand);
+      background: transparent;
+      color: var(--brand);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .date-today-btn:active { background: #f9f0ef; }
+
     /* ========== DIGITAL CLOCK ========== */
     .clock-bar {
       display: flex;
@@ -1129,6 +1176,12 @@
       <div class="clock-bar">
         <div class="digital-clock" id="digitalClock">--:--</div>
       </div>
+      <div class="date-picker-row">
+        <button class="date-nav-btn" onclick="shiftOrderDate(-1)">&#9664;</button>
+        <input type="date" id="orderDatePicker" class="date-picker-input" onchange="onOrderDateChange(this.value)">
+        <button class="date-nav-btn" onclick="shiftOrderDate(1)">&#9654;</button>
+        <button class="date-today-btn" onclick="resetOrderDateToToday()">Hoje</button>
+      </div>
       <div class="stats-row" id="statsRow"></div>
       <input type="text" class="search-input" id="orderSearch" placeholder="Pesquisar por nome ou #numero..." oninput="filterOrders()">
       <div class="filter-pills" id="filterPills">
@@ -1145,7 +1198,7 @@
     <div class="tab-content" id="tab-prep">
       <div class="section-header">
         <h3>Preparacao</h3>
-        <p>Quantidades totais a preparar hoje</p>
+        <p id="prepSubtitle">Quantidades totais a preparar hoje</p>
       </div>
       <div id="prepList"></div>
     </div>
@@ -1345,6 +1398,7 @@ let searchQuery = '';
 let statusFilter = 'all';
 let modalCallback = null;
 const today = new Date().toISOString().split('T')[0];
+let selectedOrderDate = today;
 
 // ============================================
 // AUDIO
@@ -1424,10 +1478,34 @@ function updateClock() {
   if (el) el.innerHTML = h + '<span class="clock-sep">:</span>' + m;
 }
 
+function onOrderDateChange(dateStr) {
+  if (!dateStr) return;
+  selectedOrderDate = dateStr;
+  previousOrderCount = -1;
+  loadOrders();
+}
+
+function shiftOrderDate(delta) {
+  var d = new Date(selectedOrderDate);
+  d.setDate(d.getDate() + delta);
+  selectedOrderDate = d.toISOString().split('T')[0];
+  document.getElementById('orderDatePicker').value = selectedOrderDate;
+  previousOrderCount = -1;
+  loadOrders();
+}
+
+function resetOrderDateToToday() {
+  selectedOrderDate = today;
+  document.getElementById('orderDatePicker').value = today;
+  previousOrderCount = -1;
+  loadOrders();
+}
+
 async function init() {
   document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('pt-PT', {
     weekday: 'short', day: 'numeric', month: 'short'
   });
+  document.getElementById('orderDatePicker').value = today;
   updateClock();
   setInterval(updateClock, 1000);
   await Promise.all([loadOrders(), loadMenu(), loadSlots(), loadCategories(), loadConfig(), loadSchedule()]);
@@ -1443,7 +1521,7 @@ async function loadOrders() {
     const { data, error } = await supabase
       .from('orders')
       .select('*, order_items(*)')
-      .eq('slot_date', today)
+      .eq('slot_date', selectedOrderDate)
       .order('slot_time')
       .order('created_at');
 
@@ -1459,6 +1537,17 @@ async function loadOrders() {
     orders = data || [];
     renderOrders();
     renderPrep();
+
+    // Update prep subtitle
+    var prepEl = document.getElementById('prepSubtitle');
+    if (prepEl) {
+      if (selectedOrderDate === today) {
+        prepEl.textContent = 'Quantidades totais a preparar hoje';
+      } else {
+        var d = new Date(selectedOrderDate + 'T12:00:00');
+        prepEl.textContent = 'Quantidades para ' + d.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' });
+      }
+    }
   } catch (err) {
     console.error('Load orders error:', err);
   }

@@ -482,6 +482,24 @@
     .closed-state .schedule-row .status { color: var(--text-muted); }
     .closed-state .schedule-row.highlight .day { color: var(--brand); }
     .closed-state .schedule-row.highlight .status { color: var(--brand); font-weight: 600; }
+    .closed-state .schedule-row.clickable {
+      cursor: pointer;
+      transition: background 0.2s;
+      border-radius: 8px;
+      padding: 10px 8px;
+    }
+    .closed-state .schedule-row.clickable:hover { background: #f9f0ef; }
+    .closed-state .schedule-row.clickable:active { transform: scale(0.98); }
+    .date-banner {
+      background: var(--brand);
+      color: white;
+      text-align: center;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0 20px 12px;
+    }
 
     /* ========== ERROR ========== */
     .error-msg {
@@ -623,7 +641,10 @@ let menuCategories = [];
 let slots = [];
 let cart = {};           // { itemId: quantity }
 let selectedSlot = null;
+let selectedDate = null; // ISO string for advance booking, null = today
 let currentStep = 1;
+let _scheduleCache = null;
+let _configCache = null;
 
 // ============================================
 // INIT
@@ -638,6 +659,8 @@ async function init() {
 
     const schedule = scheduleRes.data || [];
     const config = configRes.data || {};
+    _scheduleCache = schedule;
+    _configCache = config;
 
     // Check today's schedule
     const dayOfWeek = new Date().getDay();
@@ -661,8 +684,14 @@ async function init() {
       grid.innerHTML = dayOrder.map(dow => {
         const day = schedule.find(s => s.day_of_week === dow);
         if (!day) return '';
-        const isHighlight = day.mode === 'online';
-        return `<div class="schedule-row ${isHighlight ? 'highlight' : ''}">
+        const isOnlineDay = day.mode === 'online' && day.is_active;
+        if (isOnlineDay) {
+          return `<div class="schedule-row highlight clickable" onclick="selectBookingDate(${dow})">
+            <span class="day">${day.day_name}</span>
+            <span class="status">Reservar ➜</span>
+          </div>`;
+        }
+        return `<div class="schedule-row">
           <span class="day">${day.day_name}</span>
           <span class="status">${modeLabels[day.mode] || day.mode}</span>
         </div>`;
@@ -796,9 +825,17 @@ function renderSummary(targetId) {
     </div>
   `).join('');
 
+  var dateLabel = selectedDate
+    ? new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' })
+    : 'Hoje';
+
   html += `
     <div class="summary-row">
-      <span class="label">⏰ Horário</span>
+      <span class="label">Data</span>
+      <span class="value">${dateLabel}</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">Horario</span>
       <span class="value">${selectedSlot || '—'}</span>
     </div>
     <div class="summary-total">
@@ -858,8 +895,8 @@ function updateBottomBar() {
 
   const totalEl = document.getElementById('totalWrap');
 
-  // Show back button on step 2+, hide total on step 2
-  btnBack.style.display = currentStep > 1 ? 'flex' : 'none';
+  // Show back button on step 2+ or step 1 with advance booking
+  btnBack.style.display = (currentStep > 1 || (currentStep === 1 && selectedDate)) ? 'flex' : 'none';
   totalEl.style.display = currentStep === 1 ? 'block' : 'none';
 
   if (currentStep === 1) {
@@ -907,7 +944,99 @@ function nextStep() {
 }
 
 function prevStep() {
+  if (currentStep === 1 && selectedDate) {
+    // Back to schedule view
+    selectedDate = null;
+    cart = {};
+    selectedSlot = null;
+    var banner = document.getElementById('dateBanner');
+    if (banner) banner.remove();
+    document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById('stepper').style.display = 'none';
+    document.getElementById('bottomBar').style.display = 'none';
+    document.getElementById('closedState').style.display = 'block';
+    return;
+  }
   if (currentStep > 1) showStep(currentStep - 1);
+}
+
+// ============================================
+// ADVANCE BOOKING
+// ============================================
+function getNextOccurrence(targetDow) {
+  const now = new Date();
+  const currentDow = now.getDay();
+  let daysAhead = targetDow - currentDow;
+  if (daysAhead <= 0) daysAhead += 7;
+  const target = new Date(now);
+  target.setDate(now.getDate() + daysAhead);
+  return target.toISOString().split('T')[0];
+}
+
+async function selectBookingDate(dow) {
+  selectedDate = getNextOccurrence(dow);
+
+  document.getElementById('closedState').style.display = 'none';
+  document.getElementById('loadingState').style.display = 'block';
+
+  try {
+    const [menuRes, catRes, slotRes] = await Promise.all([
+      supabase.from('menu_items').select('*').eq('available', true).order('position'),
+      supabase.from('menu_categories').select('*').eq('is_active', true).order('position'),
+      supabase.rpc('get_slot_availability', { target_date: selectedDate })
+    ]);
+
+    if (menuRes.error) throw menuRes.error;
+    if (slotRes.error) throw slotRes.error;
+
+    menuItems = menuRes.data || [];
+    menuCategories = catRes.data || [];
+    slots = slotRes.data || [];
+
+    if (slots.length === 0) {
+      showError('Sem horarios disponiveis para esta data.');
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('closedState').style.display = 'block';
+      selectedDate = null;
+      return;
+    }
+
+    if (_configCache && _configCache.opening_message) {
+      document.querySelector('#step1 .section-title').textContent = _configCache.opening_message;
+    }
+
+    renderMenu();
+    renderSlots();
+    renderDateBanner();
+    showStep(1);
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('stepper').style.display = 'flex';
+  } catch (err) {
+    console.error('selectBookingDate error:', err);
+    showError('Erro ao carregar horarios.');
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('closedState').style.display = 'block';
+    selectedDate = null;
+  }
+}
+
+function renderDateBanner() {
+  var existing = document.getElementById('dateBanner');
+  if (existing) existing.remove();
+  if (!selectedDate) return;
+
+  var dateObj = new Date(selectedDate + 'T12:00:00');
+  var formatted = dateObj.toLocaleDateString('pt-PT', {
+    weekday: 'long', day: 'numeric', month: 'long'
+  });
+
+  var banner = document.createElement('div');
+  banner.id = 'dateBanner';
+  banner.className = 'date-banner';
+  banner.textContent = 'Reserva para ' + formatted;
+
+  var stepper = document.getElementById('stepper');
+  stepper.parentNode.insertBefore(banner, stepper);
 }
 
 // ============================================
@@ -929,7 +1058,7 @@ async function submitOrder() {
   hideError();
 
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const bookingDate = selectedDate || new Date().toISOString().split('T')[0];
     const total = getTotal();
 
     // Insert order
@@ -939,7 +1068,7 @@ async function submitOrder() {
         customer_name: name,
         customer_phone: phone,
         slot_time: selectedSlot,
-        slot_date: today,
+        slot_date: bookingDate,
         total_amount: total,
         notes: notes || null,
         status: 'pending'
@@ -997,6 +1126,9 @@ function hideError() {
 function resetApp() {
   cart = {};
   selectedSlot = null;
+  selectedDate = null;
+  var banner = document.getElementById('dateBanner');
+  if (banner) banner.remove();
   init();
 }
 

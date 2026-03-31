@@ -490,6 +490,43 @@
     .btn-noshow { background: var(--danger-bg); color: var(--danger); }
     .btn-cancel-order { background: #eee; color: #999; }
 
+    /* ========== WHATSAPP BUTTONS ========== */
+    .wa-actions {
+      display: flex;
+      gap: 6px;
+      padding: 0 16px 12px;
+    }
+    .wa-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      background: #25D366;
+      color: white;
+      transition: transform 0.1s, opacity 0.2s;
+      text-decoration: none;
+    }
+    .wa-btn:hover { opacity: 0.9; }
+    .wa-btn:active { transform: scale(0.95); }
+    .wa-btn svg { width: 16px; height: 16px; fill: white; flex-shrink: 0; }
+    .wa-btn.wa-secondary {
+      background: #E8F5E9;
+      color: #25D366;
+    }
+    .wa-btn.wa-secondary svg { fill: #25D366; }
+    .wa-no-phone {
+      padding: 0 16px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
     /* ========== CLIENT LIST ========== */
     .client-stats {
       display: flex;
@@ -2011,6 +2048,40 @@ function renderOrderCard(order) {
   var notes = order.notes ? '<div class="order-notes">' + escapeHtml(order.notes) + '</div>' : '';
   var totalAmt = order.total_amount ? '\u20AC' + Number(order.total_amount).toFixed(2) : '';
 
+  // WhatsApp buttons
+  var waSection = '';
+  var phone = (order.customer_phone || '').trim();
+  var hasPhone = phone.length >= 5;
+  var waIcon = '<svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.121.553 4.114 1.519 5.845L.525 23.235l5.57-1.463A11.93 11.93 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818c-1.906 0-3.725-.515-5.318-1.486l-.382-.227-3.302.868.882-3.222-.249-.396A9.764 9.764 0 012.182 12c0-5.416 4.402-9.818 9.818-9.818S21.818 6.584 21.818 12s-4.402 9.818-9.818 9.818z"/></svg>';
+
+  if (hasPhone) {
+    var cleanPhone = phone.replace(/[^0-9+]/g, '');
+    var orderNum = '#' + String(order.order_number).padStart(3, '0');
+    var customerName = order.customer_name || '';
+
+    var reminderMsg = encodeURIComponent(
+      'Ola ' + customerName + '! 🍳\n\n' +
+      'Lembramos que tem uma reserva no MARUOKO:\n' +
+      '📋 Commande ' + orderNum + '\n' +
+      '⏰ Horario: ' + (order.slot_time || '') + '\n\n' +
+      'Ate ja! 🙌'
+    );
+
+    var readyMsg = encodeURIComponent(
+      'Ola ' + customerName + '! 🎉\n\n' +
+      'A sua encomenda ' + orderNum + ' esta pronta!\n' +
+      'Pode vir levantar quando quiser. 🍽️\n\n' +
+      'Obrigado e bom apetite!'
+    );
+
+    waSection = '<div class="wa-actions">' +
+      '<a class="wa-btn wa-secondary" href="https://wa.me/' + cleanPhone + '?text=' + reminderMsg + '" target="_blank">' + waIcon + ' Lembrete</a>' +
+      '<a class="wa-btn" href="https://wa.me/' + cleanPhone + '?text=' + readyMsg + '" target="_blank">' + waIcon + ' Pronta!</a>' +
+    '</div>';
+  } else {
+    waSection = '<div class="wa-no-phone">Sem telefone — WhatsApp indisponivel</div>';
+  }
+
   return '<div class="order-card">' +
     '<div class="order-top">' +
       '<div class="order-number">#' + String(order.order_number).padStart(3, '0') + '</div>' +
@@ -2018,7 +2089,8 @@ function renderOrderCard(order) {
       '<span class="status-badge status-' + order.status + '">' + statusLabels[order.status] + '</span>' +
     '</div>' +
     '<div class="order-items-section">' + itemRows + '</div>' +
-        notes +
+    notes +
+    waSection +
     '<div class="order-footer">' +
       '<div class="order-total">' + totalAmt + '</div>' +
       '<div class="order-actions">' + actions + '</div>' +

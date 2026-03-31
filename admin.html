@@ -163,15 +163,18 @@
       border-color: var(--brand);
     }
 
-    /* ========== DATE PICKER ========== */
-    .date-picker-row {
+    /* ========== CUSTOM CALENDAR ========== */
+    .cal-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+    .cal-header {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      margin-bottom: 12px;
     }
-    .date-picker-input {
+    .cal-display {
       font-family: var(--font-body);
       font-size: 15px;
       font-weight: 600;
@@ -179,11 +182,13 @@
       background: var(--bg-card);
       border: 1.5px solid var(--border);
       border-radius: 8px;
-      padding: 8px 12px;
-      text-align: center;
+      padding: 8px 16px;
       cursor: pointer;
+      min-width: 170px;
+      text-align: center;
     }
-    .date-nav-btn {
+    .cal-display:hover { background: #f9f0ef; }
+    .cal-nav-btn {
       width: 36px;
       height: 36px;
       border-radius: 50%;
@@ -196,8 +201,8 @@
       align-items: center;
       justify-content: center;
     }
-    .date-nav-btn:active { transform: scale(0.92); }
-    .date-today-btn {
+    .cal-nav-btn:active { transform: scale(0.92); }
+    .cal-today-btn {
       padding: 8px 14px;
       border-radius: 8px;
       border: 1.5px solid var(--brand);
@@ -208,7 +213,79 @@
       font-weight: 600;
       cursor: pointer;
     }
-    .date-today-btn:active { background: #f9f0ef; }
+    .cal-today-btn:active { background: #f9f0ef; }
+    .cal-dropdown {
+      display: none;
+      position: absolute;
+      top: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      padding: 12px;
+      z-index: 200;
+      width: 300px;
+    }
+    .cal-dropdown.open { display: block; }
+    .cal-month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .cal-month-label {
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .cal-month-btn {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .cal-month-btn:hover { background: var(--bg); }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      text-align: center;
+    }
+    .cal-dow {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding: 4px 0;
+    }
+    .cal-day {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cal-day:hover { background: var(--bg); }
+    .cal-day.empty { visibility: hidden; }
+    .cal-day.today { border: 2px solid var(--brand); font-weight: 700; }
+    .cal-day.selected { background: var(--brand); color: white; font-weight: 700; }
+    .cal-day.online { background: rgba(142,33,36,0.12); color: var(--brand); font-weight: 600; }
+    .cal-day.online.selected { background: var(--brand); color: white; }
+    .cal-day.closed { color: #ccc; }
+    .cal-day.walk_in { color: var(--text-muted); }
 
     /* ========== DIGITAL CLOCK ========== */
     .clock-bar {
@@ -1176,11 +1253,21 @@
       <div class="clock-bar">
         <div class="digital-clock" id="digitalClock">--:--</div>
       </div>
-      <div class="date-picker-row">
-        <button class="date-nav-btn" onclick="shiftOrderDate(-1)">&#9664;</button>
-        <input type="date" id="orderDatePicker" class="date-picker-input" onchange="onOrderDateChange(this.value)">
-        <button class="date-nav-btn" onclick="shiftOrderDate(1)">&#9654;</button>
-        <button class="date-today-btn" onclick="resetOrderDateToToday()">Hoje</button>
+      <div class="cal-wrapper" id="calWrapper">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="shiftOrderDate(-1)">&#9664;</button>
+          <div class="cal-display" id="calDisplay" onclick="toggleCalendar()"></div>
+          <button class="cal-nav-btn" onclick="shiftOrderDate(1)">&#9654;</button>
+          <button class="cal-today-btn" onclick="resetOrderDateToToday()">Hoje</button>
+        </div>
+        <div class="cal-dropdown" id="calDropdown">
+          <div class="cal-month-nav">
+            <button class="cal-month-btn" onclick="shiftCalMonth(-1)">&#9664;</button>
+            <span class="cal-month-label" id="calMonthLabel"></span>
+            <button class="cal-month-btn" onclick="shiftCalMonth(1)">&#9654;</button>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
       </div>
       <div class="stats-row" id="statsRow"></div>
       <input type="text" class="search-input" id="orderSearch" placeholder="Pesquisar por nome ou #numero..." oninput="filterOrders()">
@@ -1399,6 +1486,8 @@ let statusFilter = 'all';
 let modalCallback = null;
 const today = new Date().toISOString().split('T')[0];
 let selectedOrderDate = today;
+let calViewDate = new Date(); // month/year being viewed in calendar
+let calOpen = false;
 
 // ============================================
 // AUDIO
@@ -1478,10 +1567,14 @@ function updateClock() {
   if (el) el.innerHTML = h + '<span class="clock-sep">:</span>' + m;
 }
 
-function onOrderDateChange(dateStr) {
+function selectOrderDate(dateStr) {
   if (!dateStr) return;
   selectedOrderDate = dateStr;
+  calViewDate = new Date(dateStr + 'T12:00:00');
   previousOrderCount = -1;
+  updateCalDisplay();
+  renderCalGrid();
+  closeCalendar();
   loadOrders();
 }
 
@@ -1489,23 +1582,102 @@ function shiftOrderDate(delta) {
   var d = new Date(selectedOrderDate);
   d.setDate(d.getDate() + delta);
   selectedOrderDate = d.toISOString().split('T')[0];
-  document.getElementById('orderDatePicker').value = selectedOrderDate;
+  calViewDate = new Date(d);
   previousOrderCount = -1;
+  updateCalDisplay();
+  renderCalGrid();
   loadOrders();
 }
 
 function resetOrderDateToToday() {
   selectedOrderDate = today;
-  document.getElementById('orderDatePicker').value = today;
+  calViewDate = new Date();
   previousOrderCount = -1;
+  updateCalDisplay();
+  renderCalGrid();
+  closeCalendar();
   loadOrders();
+}
+
+function toggleCalendar() {
+  calOpen = !calOpen;
+  document.getElementById('calDropdown').classList.toggle('open', calOpen);
+  if (calOpen) renderCalGrid();
+}
+
+function closeCalendar() {
+  calOpen = false;
+  document.getElementById('calDropdown').classList.remove('open');
+}
+
+function shiftCalMonth(delta) {
+  calViewDate.setMonth(calViewDate.getMonth() + delta);
+  renderCalGrid();
+}
+
+function updateCalDisplay() {
+  var d = new Date(selectedOrderDate + 'T12:00:00');
+  var formatted = d.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  document.getElementById('calDisplay').textContent = formatted;
+}
+
+function getScheduleMode(dayOfWeek) {
+  if (!scheduleConfig || !scheduleConfig.length) return null;
+  var entry = scheduleConfig.find(function(s) { return s.day_of_week === dayOfWeek; });
+  return entry ? entry.mode : null;
+}
+
+function renderCalGrid() {
+  var year = calViewDate.getFullYear();
+  var month = calViewDate.getMonth();
+
+  // Update month label
+  var label = calViewDate.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
+  document.getElementById('calMonthLabel').textContent = label.charAt(0).toUpperCase() + label.slice(1);
+
+  // Day of week headers (Mon-Sun)
+  var dowLabels = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
+  var html = dowLabels.map(function(d) { return '<div class="cal-dow">' + d + '</div>'; }).join('');
+
+  // First day of month (0=Sun, convert to Mon-based: Mon=0, Tue=1, ..., Sun=6)
+  var firstDay = new Date(year, month, 1).getDay();
+  var startOffset = (firstDay + 6) % 7; // Mon-based offset
+
+  // Days in month
+  var daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // Empty cells
+  for (var i = 0; i < startOffset; i++) {
+    html += '<button class="cal-day empty"></button>';
+  }
+
+  var todayStr = today;
+  var selectedStr = selectedOrderDate;
+
+  for (var day = 1; day <= daysInMonth; day++) {
+    var dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+    var dateObj = new Date(year, month, day);
+    var dow = dateObj.getDay(); // 0=Sun
+    var mode = getScheduleMode(dow);
+
+    var classes = 'cal-day';
+    if (dateStr === todayStr) classes += ' today';
+    if (dateStr === selectedStr) classes += ' selected';
+    else if (mode === 'online') classes += ' online';
+    else if (mode === 'closed') classes += ' closed';
+    else if (mode === 'walk_in') classes += ' walk_in';
+
+    html += '<button class="' + classes + '" onclick="selectOrderDate(\'' + dateStr + '\')">' + day + '</button>';
+  }
+
+  document.getElementById('calGrid').innerHTML = html;
 }
 
 async function init() {
   document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('pt-PT', {
     weekday: 'short', day: 'numeric', month: 'short'
   });
-  document.getElementById('orderDatePicker').value = today;
+  updateCalDisplay();
   updateClock();
   setInterval(updateClock, 1000);
   await Promise.all([loadOrders(), loadMenu(), loadSlots(), loadCategories(), loadConfig(), loadSchedule()]);
@@ -1620,6 +1792,7 @@ async function loadSchedule() {
     if (error) throw error;
     scheduleConfig = data || [];
     renderSchedule();
+    renderCalGrid();
   } catch (err) {
     console.error('Load schedule error:', err.message || err.code || JSON.stringify(err));
   }
@@ -1922,6 +2095,7 @@ function closeAddDropdown() {
 // Close dropdown on outside click
 document.addEventListener('click', function(e) {
   if (!e.target.closest('.add-dropdown-wrap')) closeAddDropdown();
+  if (!e.target.closest('.cal-wrapper')) closeCalendar();
 });
 
 // Section collapse

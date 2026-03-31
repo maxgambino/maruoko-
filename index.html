@@ -514,20 +514,12 @@
     <!-- ERROR -->
     <div class="error-msg" id="errorMsg"></div>
 
-    <!-- CLOSED STATE -->
+    <!-- CLOSED STATE (dynamically rendered) -->
     <div class="closed-state" id="closedState" style="display:none;">
       <img src="Sans%20titre%20(315%20x%20250%20px).png" alt="Mascotte Maruoko">
-      <h2 id="closedTitle">Reservas apenas ao Sabado!</h2>
-      <p id="closedMsg">O sistema de reservas esta aberto apenas aos sabados.</p>
-      <div class="schedule">
-        <div class="schedule-row"><span class="day">Segunda</span><span class="status">Sem reserva</span></div>
-        <div class="schedule-row"><span class="day">Terca</span><span class="status">Fechado</span></div>
-        <div class="schedule-row"><span class="day">Quarta</span><span class="status">Sem reserva</span></div>
-        <div class="schedule-row"><span class="day">Quinta</span><span class="status">Sem reserva</span></div>
-        <div class="schedule-row"><span class="day">Sexta</span><span class="status">Sem reserva</span></div>
-        <div class="schedule-row highlight"><span class="day">Sabado</span><span class="status">Reservas online</span></div>
-        <div class="schedule-row"><span class="day">Domingo</span><span class="status">Fechado</span></div>
-      </div>
+      <h2 id="closedTitle">Estamos fechados!</h2>
+      <p id="closedMsg">O sistema de reservas esta fechado de momento.</p>
+      <div class="schedule" id="scheduleGrid"></div>
     </div>
 
     <!-- LOADING -->
@@ -568,6 +560,11 @@
       <div class="form-group">
         <label for="customerPhone">Telemóvel</label>
         <input type="tel" id="customerPhone" placeholder="+351 ..." autocomplete="tel">
+      </div>
+
+      <div class="form-group">
+        <label for="orderNotes">Notas (opcional)</label>
+        <textarea id="orderNotes" placeholder="Alergias, pedidos especiais..." style="width:100%; padding:14px 16px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:var(--font-body); font-size:16px; color:var(--text); background:var(--bg-card); outline:none; resize:vertical; min-height:60px;"></textarea>
       </div>
 
       <div class="summary-card" id="orderSummary"></div>
@@ -622,6 +619,7 @@ const supabase = _sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // STATE
 // ============================================
 let menuItems = [];
+let menuCategories = [];
 let slots = [];
 let cart = {};           // { itemId: quantity }
 let selectedSlot = null;
@@ -632,36 +630,66 @@ let currentStep = 1;
 // ============================================
 async function init() {
   try {
-    // Check day of week: 0=Sun, 1=Mon, ..., 6=Sat
-    const dayOfWeek = new Date().getDay();
-    const isSaturday = dayOfWeek === 6;
+    // Load schedule + config from DB
+    const [scheduleRes, configRes] = await Promise.all([
+      supabase.from('schedule_config').select('*').order('day_of_week'),
+      supabase.from('restaurant_config').select('*').limit(1).single()
+    ]);
 
-    // If not Saturday, show closed state
-    if (!isSaturday) {
+    const schedule = scheduleRes.data || [];
+    const config = configRes.data || {};
+
+    // Check today's schedule
+    const dayOfWeek = new Date().getDay();
+    const todaySchedule = schedule.find(s => s.day_of_week === dayOfWeek);
+    const isOnline = todaySchedule && todaySchedule.mode === 'online' && todaySchedule.is_active;
+
+    // If not online today, show closed state with dynamic schedule
+    if (!isOnline) {
       document.getElementById('loadingState').style.display = 'none';
       document.getElementById('stepper').style.display = 'none';
-      document.getElementById('closedState').style.display = 'block';
       document.getElementById('bottomBar').style.display = 'none';
+
+      // Set messages from config
+      if (config.closed_title) document.getElementById('closedTitle').textContent = config.closed_title;
+      if (config.closed_message) document.getElementById('closedMsg').textContent = config.closed_message;
+
+      // Render dynamic schedule (Monday first: 1,2,3,4,5,6,0)
+      const dayOrder = [1, 2, 3, 4, 5, 6, 0];
+      const modeLabels = { closed: 'Fechado', walk_in: 'Sem reserva', online: 'Reservas online' };
+      const grid = document.getElementById('scheduleGrid');
+      grid.innerHTML = dayOrder.map(dow => {
+        const day = schedule.find(s => s.day_of_week === dow);
+        if (!day) return '';
+        const isHighlight = day.mode === 'online';
+        return `<div class="schedule-row ${isHighlight ? 'highlight' : ''}">
+          <span class="day">${day.day_name}</span>
+          <span class="status">${modeLabels[day.mode] || day.mode}</span>
+        </div>`;
+      }).join('');
+
+      document.getElementById('closedState').style.display = 'block';
       return;
     }
 
-    // Load menu
-    const { data: menu, error: menuErr } = await supabase
-      .from('menu_items')
-      .select('*')
-      .eq('available', true)
-      .order('position');
+    // Load menu items + categories + slot availability
+    const [menuRes, catRes, slotRes] = await Promise.all([
+      supabase.from('menu_items').select('*').eq('available', true).order('position'),
+      supabase.from('menu_categories').select('*').eq('is_active', true).order('position'),
+      supabase.rpc('get_slot_availability', { target_date: new Date().toISOString().split('T')[0] })
+    ]);
 
-    if (menuErr) throw menuErr;
-    menuItems = menu || [];
+    if (menuRes.error) throw menuRes.error;
+    if (slotRes.error) throw slotRes.error;
 
-    // Load slot availability for today
-    const today = new Date().toISOString().split('T')[0];
-    const { data: slotData, error: slotErr } = await supabase
-      .rpc('get_slot_availability', { target_date: today });
-    
-    if (slotErr) throw slotErr;
-    slots = slotData || [];
+    menuItems = menuRes.data || [];
+    menuCategories = catRes.data || [];
+    slots = slotRes.data || [];
+
+    // Apply config messages
+    if (config.opening_message) {
+      document.querySelector('#step1 .section-title').textContent = config.opening_message;
+    }
 
     renderMenu();
     renderSlots();
@@ -677,41 +705,62 @@ async function init() {
 // ============================================
 // RENDERING
 // ============================================
-function getCategory(item) {
-  const n = item.name.toLowerCase();
-  if (n.includes('okonomiyaki')) return 'Okonomiyaki';
-  if (n.includes('topping')) return 'Toppings';
-  if (n.includes('mochi')) return 'Dessert';
-  return 'Drinks';
-}
-
 function renderMenu() {
   const list = document.getElementById('menuList');
   let html = '';
-  let lastCat = '';
 
+  // Group items by category
+  const catMap = {};
+  menuCategories.forEach(cat => { catMap[cat.id] = { ...cat, items: [] }; });
+
+  // Assign items to categories
+  const uncategorized = [];
   menuItems.forEach(item => {
-    const cat = getCategory(item);
-    if (cat !== lastCat) {
-      html += `<div class="menu-category">${cat}</div>`;
-      lastCat = cat;
+    if (item.category_id && catMap[item.category_id]) {
+      catMap[item.category_id].items.push(item);
+    } else {
+      uncategorized.push(item);
     }
-    html += `
-      <div class="menu-item" id="item-${item.id}" data-id="${item.id}">
-        <div class="menu-item-top">
-          <span class="menu-item-name">${item.name}</span>
-          <span class="menu-item-price">€${item.price.toFixed(2)}</span>
-        </div>
-        ${item.description ? `<div class="menu-item-desc">${item.description}</div>` : ''}
-        <div class="qty-control">
-          <button class="qty-btn minus" onclick="changeQty('${item.id}', -1)">−</button>
-          <span class="qty-value" id="qty-${item.id}">0</span>
-          <button class="qty-btn plus" onclick="changeQty('${item.id}', 1)">+</button>
-        </div>
-      </div>`;
   });
 
+  // Render categories in order
+  menuCategories.forEach(cat => {
+    const items = catMap[cat.id].items;
+    if (items.length === 0) return;
+    html += `<div class="menu-category">${cat.name}</div>`;
+    items.forEach(item => { html += renderMenuItem(item); });
+  });
+
+  // Render uncategorized items
+  if (uncategorized.length > 0) {
+    html += `<div class="menu-category">Outros</div>`;
+    uncategorized.forEach(item => { html += renderMenuItem(item); });
+  }
+
   list.innerHTML = html;
+}
+
+function renderMenuItem(item) {
+  const imgHtml = item.image_url
+    ? `<img src="${item.image_url}" alt="" style="width:48px; height:48px; border-radius:8px; object-fit:cover; margin-right:12px; flex-shrink:0;">`
+    : '';
+
+  return `
+    <div class="menu-item" id="item-${item.id}" data-id="${item.id}">
+      <div class="menu-item-top">
+        <div style="display:flex; align-items:center;">
+          ${imgHtml}
+          <span class="menu-item-name">${item.name}</span>
+        </div>
+        <span class="menu-item-price">€${item.price.toFixed(2)}</span>
+      </div>
+      ${item.description ? `<div class="menu-item-desc">${item.description}</div>` : ''}
+      <div class="qty-control">
+        <button class="qty-btn minus" onclick="changeQty('${item.id}', -1)">−</button>
+        <span class="qty-value" id="qty-${item.id}">0</span>
+        <button class="qty-btn plus" onclick="changeQty('${item.id}', 1)">+</button>
+      </div>
+    </div>`;
 }
 
 function renderSlots() {
@@ -867,6 +916,7 @@ function prevStep() {
 async function submitOrder() {
   const name = document.getElementById('customerName').value.trim();
   const phone = document.getElementById('customerPhone').value.trim();
+  const notes = document.getElementById('orderNotes').value.trim();
 
   if (!name || !phone) {
     showError('Preenche o teu nome e telemóvel');
@@ -891,6 +941,7 @@ async function submitOrder() {
         slot_time: selectedSlot,
         slot_date: today,
         total_amount: total,
+        notes: notes || null,
         status: 'pending'
       })
       .select('id, order_number')

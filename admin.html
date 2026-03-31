@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
   <style>
     :root {
       --accent: #D6B6AE;
@@ -51,14 +52,8 @@
       top: 0;
       z-index: 100;
     }
-    .topbar h1 {
-      font-size: 18px;
-      font-weight: 700;
-    }
-    .topbar .date-display {
-      font-size: 13px;
-      opacity: 0.8;
-    }
+    .topbar h1 { font-size: 18px; font-weight: 700; }
+    .topbar .date-display { font-size: 13px; opacity: 0.8; }
 
     /* ========== TABS ========== */
     .tabs {
@@ -96,24 +91,14 @@
     }
 
     /* ========== SECTION HEADER ========== */
-    .section-header {
-      margin-bottom: 16px;
-    }
-    .section-header h3 {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--brand);
-    }
-    .section-header p {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
+    .section-header { margin-bottom: 16px; }
+    .section-header h3 { font-size: 20px; font-weight: 700; color: var(--brand); }
+    .section-header p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
 
     /* ========== STATS ========== */
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 10px;
       margin-bottom: 16px;
     }
@@ -124,17 +109,55 @@
       padding: 12px;
       text-align: center;
     }
-    .stat-value {
-      font-size: 26px;
-      font-weight: 700;
-      color: var(--brand);
-    }
+    .stat-value { font-size: 26px; font-weight: 700; color: var(--brand); }
     .stat-label {
       font-size: 11px;
       color: var(--text-muted);
       margin-top: 2px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+    }
+
+    /* ========== SEARCH & FILTERS ========== */
+    .search-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      background: var(--bg-card);
+      outline: none;
+      margin-bottom: 10px;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--brand); }
+    .filter-pills {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+    }
+    .filter-pill {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--bg-card);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .filter-pill.active {
+      background: var(--brand);
+      color: white;
+      border-color: var(--brand);
     }
 
     /* ========== REFRESH BAR ========== */
@@ -144,10 +167,7 @@
       align-items: center;
       margin-bottom: 14px;
     }
-    .refresh-bar .last-update {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
+    .refresh-bar .last-update { font-size: 12px; color: var(--text-muted); }
     .refresh-btn {
       padding: 8px 14px;
       border-radius: var(--radius-sm);
@@ -204,16 +224,13 @@
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.01); }
     }
-    .order-number {
-      font-weight: 700;
-      font-size: 17px;
-      color: var(--brand);
-      min-width: 48px;
-    }
+    .order-number { font-weight: 700; font-size: 17px; color: var(--brand); min-width: 48px; }
     .order-info { flex: 1; min-width: 0; }
     .order-name { font-weight: 600; font-size: 15px; color: var(--text); }
     .order-items-list { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
     .order-phone { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .order-notes { font-size: 12px; color: var(--warning); margin-top: 4px; font-style: italic; }
+    .order-total { font-size: 13px; font-weight: 700; color: var(--brand); margin-top: 4px; }
     .order-actions {
       display: flex;
       flex-direction: column;
@@ -251,6 +268,7 @@
     .action-btn:active { transform: scale(0.95); }
     .btn-pickup { background: var(--success); color: white; }
     .btn-noshow { background: var(--danger-bg); color: var(--danger); }
+    .btn-cancel-order { background: #eee; color: #999; }
 
     /* ========== PREP LIST ========== */
     .prep-item {
@@ -264,11 +282,7 @@
       margin-bottom: 8px;
     }
     .prep-item-name { font-weight: 600; color: var(--text); }
-    .prep-item-qty {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--brand);
-    }
+    .prep-item-qty { font-size: 22px; font-weight: 700; color: var(--brand); }
 
     /* ========== MENU ADMIN ========== */
     .menu-admin-item {
@@ -287,6 +301,14 @@
     .menu-admin-info .name { font-weight: 600; color: var(--text); }
     .menu-admin-info .desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
     .menu-admin-info .price { font-weight: 700; color: var(--brand); font-size: 15px; margin-top: 4px; }
+    .menu-item-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: cover;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
     .toggle-switch {
       width: 44px;
       height: 26px;
@@ -320,9 +342,7 @@
       border-top: 1px solid var(--border);
     }
     .menu-edit-form.open { display: block; }
-    .menu-edit-row {
-      margin-bottom: 10px;
-    }
+    .menu-edit-row { margin-bottom: 10px; }
     .menu-edit-row label {
       display: block;
       font-size: 12px;
@@ -331,7 +351,8 @@
       margin-bottom: 4px;
     }
     .menu-edit-row input,
-    .menu-edit-row textarea {
+    .menu-edit-row textarea,
+    .menu-edit-row select {
       width: 100%;
       padding: 10px 12px;
       border: 1.5px solid var(--border);
@@ -344,12 +365,10 @@
       transition: border-color 0.2s;
     }
     .menu-edit-row input:focus,
-    .menu-edit-row textarea:focus { border-color: var(--brand); }
+    .menu-edit-row textarea:focus,
+    .menu-edit-row select:focus { border-color: var(--brand); }
     .menu-edit-row textarea { resize: vertical; min-height: 60px; }
-    .menu-edit-actions {
-      display: flex;
-      gap: 8px;
-    }
+    .menu-edit-actions { display: flex; gap: 8px; }
     .btn-save {
       padding: 8px 16px;
       border-radius: var(--radius-sm);
@@ -429,21 +448,9 @@
       justify-content: space-between;
       gap: 12px;
     }
-    .slot-admin-time {
-      font-weight: 700;
-      font-size: 16px;
-      color: var(--brand);
-      min-width: 50px;
-    }
-    .slot-admin-capacity {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .slot-admin-capacity label {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
+    .slot-admin-time { font-weight: 700; font-size: 16px; color: var(--brand); min-width: 50px; }
+    .slot-admin-capacity { display: flex; align-items: center; gap: 10px; }
+    .slot-admin-capacity label { font-size: 12px; color: var(--text-muted); }
     .slot-capacity-input {
       width: 56px;
       padding: 6px 8px;
@@ -458,11 +465,138 @@
       outline: none;
     }
     .slot-capacity-input:focus { border-color: var(--brand); }
-    .slot-admin-actions {
+    .slot-admin-actions { display: flex; align-items: center; gap: 8px; }
+    .bulk-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .bulk-btn {
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      background: var(--bg-card);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .bulk-btn:hover { border-color: var(--brand); color: var(--brand); }
+    .bulk-btn:active { transform: scale(0.96); }
+
+    /* ========== CATEGORY ADMIN ========== */
+    .category-admin-item {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: space-between;
+      gap: 12px;
     }
+    .category-info { flex: 1; }
+    .category-info .cat-name { font-weight: 600; color: var(--text); }
+    .category-info .cat-pos { font-size: 12px; color: var(--text-muted); }
+    .category-actions { display: flex; align-items: center; gap: 8px; }
+    .category-group-header {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--brand);
+      padding: 12px 0 6px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 8px;
+      margin-top: 8px;
+    }
+
+    /* ========== QR CODE TAB ========== */
+    .qr-section { text-align: center; }
+    .qr-section canvas { margin: 20px auto; display: block; border-radius: var(--radius-sm); }
+    .qr-controls { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .qr-controls label { font-size: 12px; font-weight: 600; color: var(--brand); text-align: left; }
+    .qr-controls select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+    }
+    .btn-download {
+      width: 100%;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--brand);
+      color: white;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-download:active { transform: scale(0.97); }
+
+    /* ========== CONFIG TAB ========== */
+    .config-section {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .config-section h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--brand);
+      margin-bottom: 12px;
+    }
+    .config-row { margin-bottom: 12px; }
+    .config-row label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--brand);
+      margin-bottom: 4px;
+    }
+    .config-row input,
+    .config-row textarea,
+    .config-row select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .config-row input:focus,
+    .config-row textarea:focus,
+    .config-row select:focus { border-color: var(--brand); }
+    .config-row textarea { resize: vertical; min-height: 60px; }
+    .schedule-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .schedule-row .day-label {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text);
+      min-width: 90px;
+    }
+    .schedule-row select { flex: 1; }
 
     /* ========== TABS CONTENT ========== */
     .tab-content { display: none; }
@@ -476,14 +610,12 @@
     }
     .empty-state .icon { font-size: 36px; margin-bottom: 8px; }
 
-    /* ========== NOTIFICATION BADGE ========== */
-    .new-order-toast {
+    /* ========== TOAST ========== */
+    .toast-container {
       position: fixed;
       top: 60px;
       left: 50%;
       transform: translateX(-50%) translateY(-100px);
-      background: var(--brand);
-      color: white;
       padding: 12px 24px;
       border-radius: var(--radius);
       font-weight: 600;
@@ -491,9 +623,71 @@
       z-index: 200;
       box-shadow: var(--shadow-lg);
       transition: transform 0.4s ease;
+      color: white;
     }
-    .new-order-toast.visible {
-      transform: translateX(-50%) translateY(0);
+    .toast-container.visible { transform: translateX(-50%) translateY(0); }
+    .toast-info { background: var(--brand); }
+    .toast-success { background: var(--success); }
+    .toast-error { background: var(--danger); }
+
+    /* ========== CUSTOM MODAL ========== */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 24px;
+      max-width: 380px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+    }
+    .modal-box h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--brand);
+      margin-bottom: 8px;
+    }
+    .modal-box p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .modal-btn-confirm {
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--danger);
+      color: white;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .modal-btn-cancel {
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     /* ========== SOUND TOGGLE ========== */
@@ -521,7 +715,7 @@
     <h1>MARUOKO</h1>
     <div style="display:flex; align-items:center; gap:10px;">
       <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">
-        <span id="soundIcon">🔔</span> Son
+        <span id="soundIcon">&#128276;</span> Son
       </button>
       <div class="date-display" id="dateDisplay"></div>
     </div>
@@ -529,24 +723,46 @@
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('orders')">Encomendas</button>
-    <button class="tab" onclick="switchTab('prep')">Preparacao</button>
-    <button class="tab" onclick="switchTab('slots')">Horarios</button>
-    <button class="tab" onclick="switchTab('menu')">Menu</button>
+    <button class="tab active" data-tab="orders" onclick="switchTab('orders', this)">Encomendas</button>
+    <button class="tab" data-tab="prep" onclick="switchTab('prep', this)">Preparacao</button>
+    <button class="tab" data-tab="slots" onclick="switchTab('slots', this)">Horarios</button>
+    <button class="tab" data-tab="menu" onclick="switchTab('menu', this)">Menu</button>
+    <button class="tab" data-tab="qrcode" onclick="switchTab('qrcode', this)">QR Code</button>
+    <button class="tab" data-tab="config" onclick="switchTab('config', this)">Config</button>
   </div>
 
-  <!-- NEW ORDER TOAST -->
-  <div class="new-order-toast" id="newOrderToast">Nova reserva recebida!</div>
+  <!-- TOAST -->
+  <div class="toast-container toast-info" id="toastEl"></div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+    <div class="modal-box">
+      <h3 id="modalTitle"></h3>
+      <p id="modalMessage"></p>
+      <div class="modal-actions">
+        <button class="modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="modal-btn-confirm" id="modalConfirmBtn" onclick="confirmModal()">Confirmar</button>
+      </div>
+    </div>
+  </div>
 
   <div class="container">
 
     <!-- TAB: ORDERS -->
     <div class="tab-content active" id="tab-orders">
       <div class="refresh-bar">
-        <span class="last-update" id="lastUpdate">—</span>
+        <span class="last-update" id="lastUpdate">&mdash;</span>
         <button class="refresh-btn" onclick="loadOrders()">Atualizar</button>
       </div>
       <div class="stats-row" id="statsRow"></div>
+      <input type="text" class="search-input" id="orderSearch" placeholder="Pesquisar por nome ou #numero..." oninput="filterOrders()">
+      <div class="filter-pills" id="filterPills">
+        <button class="filter-pill active" onclick="setStatusFilter('all', this)">Todas</button>
+        <button class="filter-pill" onclick="setStatusFilter('pending', this)">Pendentes</button>
+        <button class="filter-pill" onclick="setStatusFilter('picked_up', this)">Levantadas</button>
+        <button class="filter-pill" onclick="setStatusFilter('no_show', this)">No-show</button>
+        <button class="filter-pill" onclick="setStatusFilter('cancelled', this)">Canceladas</button>
+      </div>
       <div id="ordersContainer"></div>
     </div>
 
@@ -565,6 +781,40 @@
         <h3>Horarios</h3>
         <p>Gere os creneaux e a capacidade</p>
       </div>
+      <div class="bulk-actions">
+        <button class="bulk-btn" onclick="bulkToggleSlots(true)">Ativar todos</button>
+        <button class="bulk-btn" onclick="bulkToggleSlots(false)">Desativar todos</button>
+      </div>
+      <button class="btn-add" onclick="showAddSlotForm()">+ Adicionar horario</button>
+      <div id="newSlotForm" style="display:none;">
+        <div class="menu-admin-item new-item">
+          <div class="menu-edit-row">
+            <label>Hora (HH:MM)</label>
+            <input type="text" id="new-slot-time" placeholder="12:30">
+          </div>
+          <div class="menu-edit-row">
+            <label>Max pax</label>
+            <input type="number" min="1" id="new-slot-pax" placeholder="10">
+          </div>
+          <div class="menu-edit-row">
+            <label>Dia da semana (vazio = todos)</label>
+            <select id="new-slot-day">
+              <option value="">Todos os dias</option>
+              <option value="1">Segunda</option>
+              <option value="2">Terca</option>
+              <option value="3">Quarta</option>
+              <option value="4">Quinta</option>
+              <option value="5">Sexta</option>
+              <option value="6">Sabado</option>
+              <option value="0">Domingo</option>
+            </select>
+          </div>
+          <div class="menu-edit-actions" style="margin-top:10px;">
+            <button class="btn-save" onclick="addSlot()">Adicionar</button>
+            <button class="btn-cancel" onclick="hideAddSlotForm()">Cancelar</button>
+          </div>
+        </div>
+      </div>
       <div id="slotsAdmin"></div>
     </div>
 
@@ -574,6 +824,32 @@
         <h3>Menu</h3>
         <p>Gere os pratos, precos e descricoes</p>
       </div>
+
+      <!-- Categories section -->
+      <div style="margin-bottom:20px;">
+        <h4 style="font-size:16px; font-weight:700; color:var(--brand); margin-bottom:10px;">Categorias</h4>
+        <button class="btn-add" onclick="showAddCategoryForm()">+ Adicionar categoria</button>
+        <div id="newCategoryForm" style="display:none;">
+          <div class="menu-admin-item new-item">
+            <div class="menu-edit-row">
+              <label>Nome</label>
+              <input type="text" id="new-cat-name" placeholder="Nome da categoria">
+            </div>
+            <div class="menu-edit-row">
+              <label>Posicao (ordem)</label>
+              <input type="number" min="1" id="new-cat-position" placeholder="1">
+            </div>
+            <div class="menu-edit-actions" style="margin-top:10px;">
+              <button class="btn-save" onclick="addCategory()">Adicionar</button>
+              <button class="btn-cancel" onclick="hideAddCategoryForm()">Cancelar</button>
+            </div>
+          </div>
+        </div>
+        <div id="categoriesAdmin"></div>
+      </div>
+
+      <!-- Items section -->
+      <h4 style="font-size:16px; font-weight:700; color:var(--brand); margin-bottom:10px;">Pratos</h4>
       <button class="btn-add" onclick="showAddItemForm()">+ Adicionar prato</button>
       <div id="newItemForm" style="display:none;">
         <div class="menu-admin-item new-item">
@@ -586,12 +862,20 @@
             <textarea id="new-item-desc" placeholder="Descricao do prato"></textarea>
           </div>
           <div class="menu-edit-row">
-            <label>Preco (€)</label>
+            <label>Preco (EUR)</label>
             <input type="number" step="0.50" min="0" id="new-item-price" placeholder="0.00">
           </div>
           <div class="menu-edit-row">
             <label>Posicao (ordem)</label>
             <input type="number" min="1" id="new-item-position" placeholder="1">
+          </div>
+          <div class="menu-edit-row">
+            <label>Categoria</label>
+            <select id="new-item-category"></select>
+          </div>
+          <div class="menu-edit-row">
+            <label>URL da imagem</label>
+            <input type="text" id="new-item-image" placeholder="https://...">
           </div>
           <div class="menu-edit-actions" style="margin-top:10px;">
             <button class="btn-save" onclick="addMenuItem()">Adicionar</button>
@@ -600,6 +884,73 @@
         </div>
       </div>
       <div id="menuAdmin"></div>
+    </div>
+
+    <!-- TAB: QR CODE -->
+    <div class="tab-content" id="tab-qrcode">
+      <div class="section-header">
+        <h3>QR Code</h3>
+        <p>Gera um QR code para o teu restaurante</p>
+      </div>
+      <div class="qr-section">
+        <div class="qr-controls">
+          <div class="menu-edit-row">
+            <label>URL</label>
+            <input type="text" id="qrUrl" value="https://maruoko.vercel.app" oninput="renderQR()">
+          </div>
+          <div class="menu-edit-row">
+            <label>Tamanho</label>
+            <select id="qrSize" onchange="renderQR()">
+              <option value="256">256px</option>
+              <option value="512" selected>512px</option>
+              <option value="1024">1024px</option>
+            </select>
+          </div>
+        </div>
+        <canvas id="qrCanvas"></canvas>
+        <button class="btn-download" onclick="downloadQR()">Download PNG</button>
+      </div>
+    </div>
+
+    <!-- TAB: CONFIG -->
+    <div class="tab-content" id="tab-config">
+      <div class="section-header">
+        <h3>Configuracao</h3>
+        <p>Definicoes gerais do restaurante</p>
+      </div>
+
+      <!-- Restaurant info -->
+      <div class="config-section">
+        <h4>Informacoes do restaurante</h4>
+        <div class="config-row">
+          <label>Nome do restaurante</label>
+          <input type="text" id="cfg-restaurant-name" placeholder="MARUOKO">
+        </div>
+        <div class="config-row">
+          <label>Telefone</label>
+          <input type="text" id="cfg-restaurant-phone" placeholder="+351 ...">
+        </div>
+        <div class="config-row">
+          <label>Mensagem de abertura</label>
+          <textarea id="cfg-opening-message" placeholder="Bem-vindo ao MARUOKO..."></textarea>
+        </div>
+        <div class="config-row">
+          <label>Titulo quando fechado</label>
+          <input type="text" id="cfg-closed-title" placeholder="Estamos fechados">
+        </div>
+        <div class="config-row">
+          <label>Mensagem quando fechado</label>
+          <textarea id="cfg-closed-message" placeholder="Voltamos em breve..."></textarea>
+        </div>
+        <button class="btn-save" style="margin-top:10px; width:100%; padding:12px;" onclick="saveConfig()">Guardar</button>
+      </div>
+
+      <!-- Weekly schedule -->
+      <div class="config-section">
+        <h4>Horario semanal</h4>
+        <div id="scheduleRows"></div>
+        <button class="btn-save" style="margin-top:10px; width:100%; padding:12px;" onclick="saveSchedule()">Guardar</button>
+      </div>
     </div>
 
   </div>
@@ -619,17 +970,24 @@ const supabase = _sb.createClient(SUPABASE_URL, SUPABASE_KEY);
 let orders = [];
 let allMenuItems = [];
 let slotConfigs = [];
+let allCategories = [];
+let scheduleConfig = [];
+let restaurantConfig = {};
 let previousOrderCount = -1;
 let soundEnabled = true;
+let searchQuery = '';
+let statusFilter = 'all';
+let modalCallback = null;
 const today = new Date().toISOString().split('T')[0];
 
-// Audio context for notification sound
+// ============================================
+// AUDIO
+// ============================================
 let audioCtx;
 function playNotificationSound() {
   if (!soundEnabled) return;
   try {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    // Play two short beeps
     [0, 0.15].forEach(delay => {
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
@@ -649,14 +1007,41 @@ function toggleSound() {
   const btn = document.getElementById('soundToggle');
   const icon = document.getElementById('soundIcon');
   btn.classList.toggle('muted', !soundEnabled);
-  icon.textContent = soundEnabled ? '🔔' : '🔕';
+  icon.innerHTML = soundEnabled ? '&#128276;' : '&#128277;';
 }
 
-function showToast(msg) {
-  const toast = document.getElementById('newOrderToast');
-  toast.textContent = msg || 'Nova reserva recebida!';
-  toast.classList.add('visible');
-  setTimeout(() => toast.classList.remove('visible'), 3000);
+// ============================================
+// TOAST
+// ============================================
+let toastTimeout;
+function showToast(msg, type) {
+  type = type || 'info';
+  const toast = document.getElementById('toastEl');
+  toast.textContent = msg;
+  toast.className = 'toast-container toast-' + type + ' visible';
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toast.classList.remove('visible'), 3000);
+}
+
+// ============================================
+// MODAL
+// ============================================
+function showModal(title, message, onConfirm) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalMessage').textContent = message;
+  modalCallback = onConfirm;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  modalCallback = null;
+}
+function confirmModal() {
+  if (modalCallback) modalCallback();
+  closeModal();
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
 }
 
 // ============================================
@@ -666,8 +1051,9 @@ async function init() {
   document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('pt-PT', {
     weekday: 'short', day: 'numeric', month: 'short'
   });
-  await Promise.all([loadOrders(), loadMenu(), loadSlots()]);
+  await Promise.all([loadOrders(), loadMenu(), loadSlots(), loadCategories(), loadConfig(), loadSchedule()]);
   setInterval(loadOrders, 15000);
+  renderQR();
 }
 
 // ============================================
@@ -687,7 +1073,7 @@ async function loadOrders() {
     const newCount = (data || []).length;
     if (previousOrderCount >= 0 && newCount > previousOrderCount) {
       playNotificationSound();
-      showToast(`Nova reserva! (${newCount} total)`);
+      showToast('Nova reserva! (' + newCount + ' total)', 'info');
     }
     previousOrderCount = newCount;
 
@@ -729,68 +1115,126 @@ async function loadSlots() {
   }
 }
 
+async function loadCategories() {
+  try {
+    const { data, error } = await supabase
+      .from('menu_categories')
+      .select('*')
+      .order('position');
+    if (error) throw error;
+    allCategories = data || [];
+    renderCategoriesAdmin();
+    populateCategoryDropdowns();
+  } catch (err) {
+    console.error('Load categories error:', err);
+  }
+}
+
+async function loadConfig() {
+  try {
+    const { data, error } = await supabase
+      .from('restaurant_config')
+      .select('*')
+      .limit(1)
+      .single();
+    if (error && error.code !== 'PGRST116') throw error;
+    restaurantConfig = data || {};
+    renderConfig();
+  } catch (err) {
+    console.error('Load config error:', err);
+  }
+}
+
+async function loadSchedule() {
+  try {
+    const { data, error } = await supabase
+      .from('schedule_config')
+      .select('*')
+      .order('day_of_week');
+    if (error) throw error;
+    scheduleConfig = data || [];
+    renderSchedule();
+  } catch (err) {
+    console.error('Load schedule error:', err);
+  }
+}
+
+// ============================================
+// FILTER ORDERS
+// ============================================
+function filterOrders() {
+  searchQuery = document.getElementById('orderSearch').value.trim().toLowerCase();
+  renderOrders();
+}
+function setStatusFilter(filter, el) {
+  statusFilter = filter;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderOrders();
+}
+function getFilteredOrders() {
+  let filtered = orders;
+  if (statusFilter !== 'all') {
+    filtered = filtered.filter(o => o.status === statusFilter);
+  }
+  if (searchQuery) {
+    filtered = filtered.filter(o => {
+      const num = '#' + String(o.order_number).padStart(3, '0');
+      return o.customer_name.toLowerCase().includes(searchQuery) || num.toLowerCase().includes(searchQuery);
+    });
+  }
+  return filtered;
+}
+
 // ============================================
 // RENDER: ORDERS
 // ============================================
 function renderOrders() {
   const total = orders.length;
-  const pending = orders.filter(o => o.status === 'pending').length;
+  const pending = orders.filter(o => o.status === 'pending' || o.status === 'confirmed').length;
   const pickedUp = orders.filter(o => o.status === 'picked_up').length;
   const revenue = orders
     .filter(o => o.status !== 'cancelled' && o.status !== 'no_show')
-    .reduce((s, o) => s + o.total_amount, 0);
+    .reduce((s, o) => s + (o.total_amount || 0), 0);
 
-  document.getElementById('statsRow').innerHTML = `
-    <div class="stat-card">
-      <div class="stat-value">${total}</div>
-      <div class="stat-label">Reservas</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value">${pending}</div>
-      <div class="stat-label">Pendentes</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value">${revenue.toFixed(0)}€</div>
-      <div class="stat-label">Receita</div>
-    </div>
-  `;
+  document.getElementById('statsRow').innerHTML =
+    '<div class="stat-card"><div class="stat-value">' + total + '</div><div class="stat-label">Reservas</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + pending + '</div><div class="stat-label">Pendentes</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + pickedUp + '</div><div class="stat-label">Levantadas</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + revenue.toFixed(0) + '\u20AC</div><div class="stat-label">Receita</div></div>';
 
+  const filtered = getFilteredOrders();
   const grouped = {};
-  orders.forEach(o => {
+  filtered.forEach(o => {
     if (!grouped[o.slot_time]) grouped[o.slot_time] = [];
     grouped[o.slot_time].push(o);
   });
 
   const container = document.getElementById('ordersContainer');
 
-  if (total === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">📭</div>
-        <p>Nenhuma reserva para hoje</p>
-      </div>`;
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">&#128237;</div><p>Nenhuma reserva encontrada</p></div>';
     return;
   }
 
   container.innerHTML = Object.entries(grouped)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([time, slotOrders]) => `
-      <div class="slot-group">
-        <div class="slot-group-header">
-          <span>${time}</span>
-          <span class="badge">${slotOrders.length} reserva${slotOrders.length > 1 ? 's' : ''}</span>
-        </div>
-        ${slotOrders.map(renderOrderCard).join('')}
-      </div>
-    `).join('');
+    .sort(function(a, b) { return a[0].localeCompare(b[0]); })
+    .map(function(entry) {
+      var time = entry[0];
+      var slotOrders = entry[1];
+      return '<div class="slot-group">' +
+        '<div class="slot-group-header"><span>' + time + '</span><span class="badge">' + slotOrders.length + ' reserva' + (slotOrders.length > 1 ? 's' : '') + '</span></div>' +
+        slotOrders.map(renderOrderCard).join('') +
+        '</div>';
+    }).join('');
 }
 
 function renderOrderCard(order) {
-  const items = (order.order_items || [])
-    .map(i => `${i.quantity}× ${i.item_name}`)
+  var items = (order.order_items || [])
+    .map(function(i) { return i.quantity + '\u00D7 ' + i.item_name; })
     .join(', ');
 
-  const statusLabels = {
+  var statusLabels = {
     pending: 'Pendente',
     confirmed: 'Confirmada',
     picked_up: 'Levantada',
@@ -798,314 +1242,744 @@ function renderOrderCard(order) {
     cancelled: 'Cancelada'
   };
 
-  const actions = order.status === 'pending' || order.status === 'confirmed' ? `
-    <button class="action-btn btn-pickup" onclick="updateStatus('${order.id}', 'picked_up')">Levantou</button>
-    <button class="action-btn btn-noshow" onclick="updateStatus('${order.id}', 'no_show')">No-show</button>
-  ` : '';
+  var actions = '';
+  if (order.status === 'pending' || order.status === 'confirmed') {
+    actions = '<button class="action-btn btn-pickup" onclick="updateStatus(\'' + order.id + '\', \'picked_up\')">Levantou</button>' +
+      '<button class="action-btn btn-noshow" onclick="updateStatus(\'' + order.id + '\', \'no_show\')">No-show</button>' +
+      '<button class="action-btn btn-cancel-order" onclick="cancelOrder(\'' + order.id + '\')">Cancelar</button>';
+  }
 
-  return `
-    <div class="order-card">
-      <div class="order-number">#${String(order.order_number).padStart(3, '0')}</div>
-      <div class="order-info">
-        <div class="order-name">${order.customer_name}</div>
-        <div class="order-items-list">${items}</div>
-        <div class="order-phone">${order.customer_phone}</div>
-      </div>
-      <div class="order-actions">
-        <span class="status-badge status-${order.status}">${statusLabels[order.status]}</span>
-        ${actions}
-      </div>
-    </div>
-  `;
+  var notes = order.notes ? '<div class="order-notes">Nota: ' + escapeHtml(order.notes) + '</div>' : '';
+  var totalAmt = order.total_amount ? '<div class="order-total">\u20AC' + Number(order.total_amount).toFixed(2) + '</div>' : '';
+
+  return '<div class="order-card">' +
+    '<div class="order-number">#' + String(order.order_number).padStart(3, '0') + '</div>' +
+    '<div class="order-info">' +
+      '<div class="order-name">' + escapeHtml(order.customer_name) + '</div>' +
+      '<div class="order-items-list">' + escapeHtml(items) + '</div>' +
+      '<div class="order-phone">' + escapeHtml(order.customer_phone) + '</div>' +
+      notes + totalAmt +
+    '</div>' +
+    '<div class="order-actions">' +
+      '<span class="status-badge status-' + order.status + '">' + statusLabels[order.status] + '</span>' +
+      actions +
+    '</div>' +
+    '</div>';
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 // ============================================
 // RENDER: PREP LIST
 // ============================================
 function renderPrep() {
-  const activeOrders = orders.filter(o => o.status !== 'cancelled' && o.status !== 'no_show');
-  const totals = {};
+  var activeOrders = orders.filter(function(o) { return o.status !== 'cancelled' && o.status !== 'no_show'; });
+  var totals = {};
 
-  activeOrders.forEach(o => {
-    (o.order_items || []).forEach(item => {
+  activeOrders.forEach(function(o) {
+    (o.order_items || []).forEach(function(item) {
       totals[item.item_name] = (totals[item.item_name] || 0) + item.quantity;
     });
   });
 
-  const list = document.getElementById('prepList');
+  var list = document.getElementById('prepList');
 
   if (Object.keys(totals).length === 0) {
-    list.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">🍳</div>
-        <p>Nada para preparar de momento</p>
-      </div>`;
+    list.innerHTML = '<div class="empty-state"><div class="icon">&#127859;</div><p>Nada para preparar de momento</p></div>';
     return;
   }
 
   list.innerHTML = Object.entries(totals)
-    .sort(([, a], [, b]) => b - a)
-    .map(([name, qty]) => `
-      <div class="prep-item">
-        <span class="prep-item-name">${name}</span>
-        <span class="prep-item-qty">${qty}</span>
-      </div>
-    `).join('');
+    .sort(function(a, b) { return b[1] - a[1]; })
+    .map(function(entry) {
+      return '<div class="prep-item"><span class="prep-item-name">' + escapeHtml(entry[0]) + '</span><span class="prep-item-qty">' + entry[1] + '</span></div>';
+    }).join('');
 }
 
 // ============================================
 // RENDER: SLOTS ADMIN
 // ============================================
 function renderSlotsAdmin() {
-  const container = document.getElementById('slotsAdmin');
+  var container = document.getElementById('slotsAdmin');
 
   // Deduplicate: keep one entry per slot_time (prefer day_of_week: null = every day)
-  const seen = {};
-  const uniqueSlots = [];
-  slotConfigs.forEach(slot => {
+  var seen = {};
+  var uniqueSlots = [];
+  slotConfigs.forEach(function(slot) {
     if (!seen[slot.slot_time]) {
       seen[slot.slot_time] = slot;
       uniqueSlots.push(slot);
     } else if (slot.day_of_week === null) {
-      // Prefer the "every day" entry
-      const idx = uniqueSlots.indexOf(seen[slot.slot_time]);
+      var idx = uniqueSlots.indexOf(seen[slot.slot_time]);
       uniqueSlots[idx] = slot;
       seen[slot.slot_time] = slot;
     }
   });
 
   if (uniqueSlots.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">⏰</div>
-        <p>Nenhum horario configurado</p>
-      </div>`;
+    container.innerHTML = '<div class="empty-state"><div class="icon">&#9200;</div><p>Nenhum horario configurado</p></div>';
     return;
   }
 
-  container.innerHTML = uniqueSlots.map(slot => `
-    <div class="slot-admin-item">
-      <div class="slot-admin-time">${slot.slot_time}</div>
-      <div class="slot-admin-capacity">
-        <label>pax</label>
-        <input type="number" class="slot-capacity-input"
-               value="${slot.max_orders}" min="0" max="50"
-               onchange="updateSlotCapacity('${slot.id}', this.value)">
-      </div>
-      <div class="slot-admin-actions">
-        <div class="toggle-switch ${slot.is_active ? 'on' : ''}"
-             onclick="toggleSlot('${slot.id}', ${!slot.is_active})"></div>
-      </div>
-    </div>
-  `).join('');
+  container.innerHTML = uniqueSlots.map(function(slot) {
+    return '<div class="slot-admin-item">' +
+      '<div class="slot-admin-time">' + slot.slot_time + '</div>' +
+      '<div class="slot-admin-capacity">' +
+        '<label>pax</label>' +
+        '<input type="number" class="slot-capacity-input" value="' + slot.max_orders + '" min="0" max="50" onchange="updateSlotCapacity(\'' + slot.id + '\', this.value)">' +
+      '</div>' +
+      '<div class="slot-admin-actions">' +
+        '<div class="toggle-switch ' + (slot.is_active ? 'on' : '') + '" onclick="toggleSlot(\'' + slot.id + '\', ' + !slot.is_active + ')"></div>' +
+        '<button class="btn-delete" style="margin:0;" onclick="deleteSlot(\'' + slot.id + '\', \'' + slot.slot_time + '\')">X</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ============================================
+// RENDER: CATEGORIES ADMIN
+// ============================================
+function renderCategoriesAdmin() {
+  var container = document.getElementById('categoriesAdmin');
+  if (!container) return;
+
+  if (allCategories.length === 0) {
+    container.innerHTML = '<div class="empty-state" style="padding:16px 0;"><p>Nenhuma categoria</p></div>';
+    return;
+  }
+
+  container.innerHTML = allCategories.map(function(cat) {
+    return '<div class="category-admin-item" id="cat-' + cat.id + '">' +
+      '<div class="category-info">' +
+        '<div class="cat-name">' + escapeHtml(cat.name) + '</div>' +
+        '<div class="cat-pos">Posicao: ' + cat.position + '</div>' +
+      '</div>' +
+      '<div class="category-actions">' +
+        '<div class="toggle-switch ' + (cat.active !== false ? 'on' : '') + '" onclick="toggleCategory(\'' + cat.id + '\', ' + (cat.active === false) + ')"></div>' +
+        '<button class="btn-edit" style="margin:0;" onclick="editCategoryPrompt(\'' + cat.id + '\')">Editar</button>' +
+        '<button class="btn-delete" style="margin:0;" onclick="deleteCategory(\'' + cat.id + '\', \'' + escapeHtml(cat.name).replace(/'/g, "\\'") + '\')">X</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function populateCategoryDropdowns() {
+  var opts = '<option value="">Sem categoria</option>' +
+    allCategories.map(function(c) { return '<option value="' + c.id + '">' + escapeHtml(c.name) + '</option>'; }).join('');
+  var newSel = document.getElementById('new-item-category');
+  if (newSel) newSel.innerHTML = opts;
 }
 
 // ============================================
 // RENDER: MENU ADMIN
 // ============================================
 function renderMenuAdmin() {
-  document.getElementById('menuAdmin').innerHTML = allMenuItems.map(item => `
-    <div class="menu-admin-item" id="menu-item-${item.id}">
-      <div class="menu-admin-top">
-        <div class="menu-admin-info">
-          <div class="name">${item.name}</div>
-          ${item.description ? `<div class="desc">${item.description}</div>` : ''}
-          <div class="price">${item.price.toFixed(2)}€</div>
-        </div>
-        <div class="toggle-switch ${item.available ? 'on' : ''}"
-             onclick="toggleItem('${item.id}', ${!item.available})"></div>
-      </div>
-      <div style="display:flex;">
-        <button class="btn-edit" onclick="toggleEditForm('${item.id}')">Editar</button>
-        <button class="btn-delete" onclick="deleteMenuItem('${item.id}', '${item.name.replace(/'/g, "\\'")}')">Eliminar</button>
-      </div>
-      <div class="menu-edit-form" id="edit-${item.id}">
-        <div class="menu-edit-row">
-          <label>Nome</label>
-          <input type="text" id="edit-name-${item.id}" value="${item.name}">
-        </div>
-        <div class="menu-edit-row">
-          <label>Descricao</label>
-          <textarea id="edit-desc-${item.id}">${item.description || ''}</textarea>
-        </div>
-        <div class="menu-edit-row">
-          <label>Preco (€)</label>
-          <input type="number" step="0.50" min="0" id="edit-price-${item.id}" value="${item.price}">
-        </div>
-        <div class="menu-edit-actions">
-          <button class="btn-save" onclick="saveMenuItem('${item.id}')">Guardar</button>
-          <button class="btn-cancel" onclick="toggleEditForm('${item.id}')">Cancelar</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
+  var container = document.getElementById('menuAdmin');
+
+  // Group items by category
+  var catMap = {};
+  allCategories.forEach(function(c) { catMap[c.id] = c.name; });
+
+  var grouped = {};
+  var uncategorized = [];
+  allMenuItems.forEach(function(item) {
+    if (item.category_id && catMap[item.category_id]) {
+      if (!grouped[item.category_id]) grouped[item.category_id] = [];
+      grouped[item.category_id].push(item);
+    } else {
+      uncategorized.push(item);
+    }
+  });
+
+  var html = '';
+
+  // Render by category order
+  allCategories.forEach(function(cat) {
+    var items = grouped[cat.id];
+    if (!items || items.length === 0) return;
+    html += '<div class="category-group-header">' + escapeHtml(cat.name) + '</div>';
+    html += items.map(renderMenuItemCard).join('');
+  });
+
+  // Uncategorized
+  if (uncategorized.length > 0) {
+    if (allCategories.length > 0) {
+      html += '<div class="category-group-header">Sem categoria</div>';
+    }
+    html += uncategorized.map(renderMenuItemCard).join('');
+  }
+
+  container.innerHTML = html;
+  populateCategoryDropdowns();
+}
+
+function renderMenuItemCard(item) {
+  var catOpts = '<option value="">Sem categoria</option>' +
+    allCategories.map(function(c) {
+      return '<option value="' + c.id + '"' + (item.category_id === c.id ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>';
+    }).join('');
+
+  var thumb = item.image_url ? '<img class="menu-item-thumb" src="' + escapeHtml(item.image_url) + '" alt="">' : '';
+
+  return '<div class="menu-admin-item" id="menu-item-' + item.id + '">' +
+    '<div class="menu-admin-top">' +
+      thumb +
+      '<div class="menu-admin-info">' +
+        '<div class="name">' + escapeHtml(item.name) + '</div>' +
+        (item.description ? '<div class="desc">' + escapeHtml(item.description) + '</div>' : '') +
+        '<div class="price">' + Number(item.price).toFixed(2) + '\u20AC</div>' +
+      '</div>' +
+      '<div class="toggle-switch ' + (item.available ? 'on' : '') + '" onclick="toggleItem(\'' + item.id + '\', ' + !item.available + ')"></div>' +
+    '</div>' +
+    '<div style="display:flex;">' +
+      '<button class="btn-edit" onclick="toggleEditForm(\'' + item.id + '\')">Editar</button>' +
+      '<button class="btn-delete" onclick="deleteMenuItem(\'' + item.id + '\', \'' + escapeHtml(item.name).replace(/'/g, "\\'") + '\')">Eliminar</button>' +
+    '</div>' +
+    '<div class="menu-edit-form" id="edit-' + item.id + '">' +
+      '<div class="menu-edit-row"><label>Nome</label><input type="text" id="edit-name-' + item.id + '" value="' + escapeHtml(item.name) + '"></div>' +
+      '<div class="menu-edit-row"><label>Descricao</label><textarea id="edit-desc-' + item.id + '">' + escapeHtml(item.description || '') + '</textarea></div>' +
+      '<div class="menu-edit-row"><label>Preco (EUR)</label><input type="number" step="0.50" min="0" id="edit-price-' + item.id + '" value="' + item.price + '"></div>' +
+      '<div class="menu-edit-row"><label>Posicao</label><input type="number" min="1" id="edit-pos-' + item.id + '" value="' + (item.position || '') + '"></div>' +
+      '<div class="menu-edit-row"><label>Categoria</label><select id="edit-cat-' + item.id + '">' + catOpts + '</select></div>' +
+      '<div class="menu-edit-row"><label>URL da imagem</label><input type="text" id="edit-img-' + item.id + '" value="' + escapeHtml(item.image_url || '') + '"></div>' +
+      '<div class="menu-edit-actions">' +
+        '<button class="btn-save" onclick="saveMenuItem(\'' + item.id + '\')">Guardar</button>' +
+        '<button class="btn-cancel" onclick="toggleEditForm(\'' + item.id + '\')">Cancelar</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
 }
 
 function toggleEditForm(itemId) {
-  const form = document.getElementById(`edit-${itemId}`);
+  var form = document.getElementById('edit-' + itemId);
   form.classList.toggle('open');
 }
 
+// ============================================
+// RENDER: CONFIG
+// ============================================
+function renderConfig() {
+  document.getElementById('cfg-restaurant-name').value = restaurantConfig.restaurant_name || '';
+  document.getElementById('cfg-restaurant-phone').value = restaurantConfig.restaurant_phone || '';
+  document.getElementById('cfg-opening-message').value = restaurantConfig.opening_message || '';
+  document.getElementById('cfg-closed-title').value = restaurantConfig.closed_title || '';
+  document.getElementById('cfg-closed-message').value = restaurantConfig.closed_message || '';
+}
+
+// ============================================
+// RENDER: SCHEDULE
+// ============================================
+function renderSchedule() {
+  var days = [
+    { dow: 1, label: 'Segunda' },
+    { dow: 2, label: 'Terca' },
+    { dow: 3, label: 'Quarta' },
+    { dow: 4, label: 'Quinta' },
+    { dow: 5, label: 'Sexta' },
+    { dow: 6, label: 'Sabado' },
+    { dow: 0, label: 'Domingo' }
+  ];
+
+  var configMap = {};
+  scheduleConfig.forEach(function(s) { configMap[s.day_of_week] = s.mode || 'closed'; });
+
+  var container = document.getElementById('scheduleRows');
+  container.innerHTML = days.map(function(d) {
+    var val = configMap[d.dow] || 'closed';
+    return '<div class="schedule-row">' +
+      '<span class="day-label">' + d.label + '</span>' +
+      '<select id="schedule-' + d.dow + '">' +
+        '<option value="closed"' + (val === 'closed' ? ' selected' : '') + '>Fechado</option>' +
+        '<option value="no_reservation"' + (val === 'no_reservation' ? ' selected' : '') + '>Sem reserva</option>' +
+        '<option value="online"' + (val === 'online' ? ' selected' : '') + '>Reservas online</option>' +
+      '</select>' +
+    '</div>';
+  }).join('');
+}
+
+// ============================================
+// ADD/EDIT FORMS
+// ============================================
 function showAddItemForm() {
   document.getElementById('newItemForm').style.display = 'block';
   document.getElementById('new-item-name').focus();
 }
-
 function hideAddItemForm() {
   document.getElementById('newItemForm').style.display = 'none';
   document.getElementById('new-item-name').value = '';
   document.getElementById('new-item-desc').value = '';
   document.getElementById('new-item-price').value = '';
   document.getElementById('new-item-position').value = '';
+  document.getElementById('new-item-image').value = '';
 }
 
+function showAddCategoryForm() {
+  document.getElementById('newCategoryForm').style.display = 'block';
+  document.getElementById('new-cat-name').focus();
+}
+function hideAddCategoryForm() {
+  document.getElementById('newCategoryForm').style.display = 'none';
+  document.getElementById('new-cat-name').value = '';
+  document.getElementById('new-cat-position').value = '';
+}
+
+function showAddSlotForm() {
+  document.getElementById('newSlotForm').style.display = 'block';
+  document.getElementById('new-slot-time').focus();
+}
+function hideAddSlotForm() {
+  document.getElementById('newSlotForm').style.display = 'none';
+  document.getElementById('new-slot-time').value = '';
+  document.getElementById('new-slot-pax').value = '';
+  document.getElementById('new-slot-day').value = '';
+}
+
+// ============================================
+// ACTIONS: ORDERS
+// ============================================
+async function updateStatus(orderId, status) {
+  try {
+    var { error } = await supabase
+      .from('orders')
+      .update({ status: status })
+      .eq('id', orderId);
+    if (error) throw error;
+    showToast('Estado atualizado', 'success');
+    await loadOrders();
+  } catch (err) {
+    console.error('Update status error:', err);
+    showToast('Erro ao atualizar', 'error');
+  }
+}
+
+function cancelOrder(orderId) {
+  showModal('Cancelar reserva', 'Tens a certeza que queres cancelar esta reserva?', async function() {
+    await updateStatus(orderId, 'cancelled');
+  });
+}
+
+// ============================================
+// ACTIONS: MENU ITEMS
+// ============================================
 async function addMenuItem() {
-  const name = document.getElementById('new-item-name').value.trim();
-  const description = document.getElementById('new-item-desc').value.trim();
-  const price = parseFloat(document.getElementById('new-item-price').value);
-  const position = parseInt(document.getElementById('new-item-position').value) || (allMenuItems.length + 1);
+  var name = document.getElementById('new-item-name').value.trim();
+  var description = document.getElementById('new-item-desc').value.trim();
+  var price = parseFloat(document.getElementById('new-item-price').value);
+  var position = parseInt(document.getElementById('new-item-position').value) || (allMenuItems.length + 1);
+  var category_id = document.getElementById('new-item-category').value || null;
+  var image_url = document.getElementById('new-item-image').value.trim() || null;
 
   if (!name || isNaN(price)) {
-    alert('Preenche o nome e o preco');
+    showToast('Preenche o nome e o preco', 'error');
     return;
   }
 
   try {
-    const { data, error } = await supabase
+    var { data, error } = await supabase
       .from('menu_items')
-      .insert({ name, description: description || null, price, position, available: true })
+      .insert({ name: name, description: description || null, price: price, position: position, available: true, category_id: category_id, image_url: image_url })
       .select()
       .single();
 
     if (error) throw error;
     allMenuItems.push(data);
-    allMenuItems.sort((a, b) => a.position - b.position);
+    allMenuItems.sort(function(a, b) { return a.position - b.position; });
     renderMenuAdmin();
     hideAddItemForm();
+    showToast('Prato adicionado', 'success');
   } catch (err) {
     console.error('Add menu item error:', err);
-    alert('Erro ao adicionar');
+    showToast('Erro ao adicionar', 'error');
   }
 }
 
 async function deleteMenuItem(itemId, itemName) {
-  if (!confirm(`Eliminar "${itemName}"? Esta acao e irreversivel.`)) return;
-
-  try {
-    const { error } = await supabase
-      .from('menu_items')
-      .delete()
-      .eq('id', itemId);
-
-    if (error) throw error;
-    allMenuItems = allMenuItems.filter(m => m.id !== itemId);
-    renderMenuAdmin();
-  } catch (err) {
-    console.error('Delete menu item error:', err);
-    alert('Erro ao eliminar');
-  }
-}
-
-// ============================================
-// ACTIONS
-// ============================================
-async function updateStatus(orderId, status) {
-  try {
-    const { error } = await supabase
-      .from('orders')
-      .update({ status })
-      .eq('id', orderId);
-    if (error) throw error;
-    await loadOrders();
-  } catch (err) {
-    console.error('Update status error:', err);
-    alert('Erro ao atualizar');
-  }
+  showModal('Eliminar prato', 'Eliminar "' + itemName + '"? Esta acao e irreversivel.', async function() {
+    try {
+      var { error } = await supabase
+        .from('menu_items')
+        .delete()
+        .eq('id', itemId);
+      if (error) throw error;
+      allMenuItems = allMenuItems.filter(function(m) { return m.id !== itemId; });
+      renderMenuAdmin();
+      showToast('Prato eliminado', 'success');
+    } catch (err) {
+      console.error('Delete menu item error:', err);
+      showToast('Erro ao eliminar', 'error');
+    }
+  });
 }
 
 async function toggleItem(itemId, available) {
   try {
-    const { error } = await supabase
+    var { error } = await supabase
       .from('menu_items')
-      .update({ available })
+      .update({ available: available })
       .eq('id', itemId);
     if (error) throw error;
-    const item = allMenuItems.find(m => m.id === itemId);
+    var item = allMenuItems.find(function(m) { return m.id === itemId; });
     if (item) item.available = available;
     renderMenuAdmin();
+    showToast(available ? 'Prato ativado' : 'Prato desativado', 'success');
   } catch (err) {
     console.error('Toggle error:', err);
-    alert('Erro ao atualizar');
+    showToast('Erro ao atualizar', 'error');
   }
 }
 
 async function saveMenuItem(itemId) {
-  const name = document.getElementById(`edit-name-${itemId}`).value.trim();
-  const description = document.getElementById(`edit-desc-${itemId}`).value.trim();
-  const price = parseFloat(document.getElementById(`edit-price-${itemId}`).value);
+  var name = document.getElementById('edit-name-' + itemId).value.trim();
+  var description = document.getElementById('edit-desc-' + itemId).value.trim();
+  var price = parseFloat(document.getElementById('edit-price-' + itemId).value);
+  var position = parseInt(document.getElementById('edit-pos-' + itemId).value) || 1;
+  var category_id = document.getElementById('edit-cat-' + itemId).value || null;
+  var image_url = document.getElementById('edit-img-' + itemId).value.trim() || null;
 
   if (!name || isNaN(price)) {
-    alert('Preenche o nome e o preco');
+    showToast('Preenche o nome e o preco', 'error');
     return;
   }
 
   try {
-    const { error } = await supabase
+    var { error } = await supabase
       .from('menu_items')
-      .update({ name, description, price })
+      .update({ name: name, description: description, price: price, position: position, category_id: category_id, image_url: image_url })
       .eq('id', itemId);
     if (error) throw error;
 
-    const item = allMenuItems.find(m => m.id === itemId);
-    if (item) { item.name = name; item.description = description; item.price = price; }
+    var item = allMenuItems.find(function(m) { return m.id === itemId; });
+    if (item) {
+      item.name = name;
+      item.description = description;
+      item.price = price;
+      item.position = position;
+      item.category_id = category_id;
+      item.image_url = image_url;
+    }
+    allMenuItems.sort(function(a, b) { return a.position - b.position; });
     renderMenuAdmin();
+    showToast('Prato guardado', 'success');
   } catch (err) {
     console.error('Save menu error:', err);
-    alert('Erro ao guardar');
+    showToast('Erro ao guardar', 'error');
   }
 }
 
+// ============================================
+// ACTIONS: CATEGORIES
+// ============================================
+async function addCategory() {
+  var name = document.getElementById('new-cat-name').value.trim();
+  var position = parseInt(document.getElementById('new-cat-position').value) || (allCategories.length + 1);
+
+  if (!name) {
+    showToast('Preenche o nome da categoria', 'error');
+    return;
+  }
+
+  try {
+    var { data, error } = await supabase
+      .from('menu_categories')
+      .insert({ name: name, position: position, active: true })
+      .select()
+      .single();
+    if (error) throw error;
+    allCategories.push(data);
+    allCategories.sort(function(a, b) { return a.position - b.position; });
+    renderCategoriesAdmin();
+    renderMenuAdmin();
+    hideAddCategoryForm();
+    showToast('Categoria adicionada', 'success');
+  } catch (err) {
+    console.error('Add category error:', err);
+    showToast('Erro ao adicionar', 'error');
+  }
+}
+
+async function toggleCategory(catId, active) {
+  try {
+    var { error } = await supabase
+      .from('menu_categories')
+      .update({ active: active })
+      .eq('id', catId);
+    if (error) throw error;
+    var cat = allCategories.find(function(c) { return c.id === catId; });
+    if (cat) cat.active = active;
+    renderCategoriesAdmin();
+    showToast(active ? 'Categoria ativada' : 'Categoria desativada', 'success');
+  } catch (err) {
+    console.error('Toggle category error:', err);
+    showToast('Erro ao atualizar', 'error');
+  }
+}
+
+function editCategoryPrompt(catId) {
+  var cat = allCategories.find(function(c) { return c.id === catId; });
+  if (!cat) return;
+  var newName = prompt('Novo nome:', cat.name);
+  if (newName === null) return;
+  newName = newName.trim();
+  if (!newName) return;
+  var newPos = prompt('Nova posicao:', cat.position);
+  if (newPos === null) return;
+  editCategory(catId, newName, parseInt(newPos) || cat.position);
+}
+
+async function editCategory(catId, name, position) {
+  try {
+    var { error } = await supabase
+      .from('menu_categories')
+      .update({ name: name, position: position })
+      .eq('id', catId);
+    if (error) throw error;
+    var cat = allCategories.find(function(c) { return c.id === catId; });
+    if (cat) { cat.name = name; cat.position = position; }
+    allCategories.sort(function(a, b) { return a.position - b.position; });
+    renderCategoriesAdmin();
+    renderMenuAdmin();
+    showToast('Categoria atualizada', 'success');
+  } catch (err) {
+    console.error('Edit category error:', err);
+    showToast('Erro ao atualizar', 'error');
+  }
+}
+
+async function deleteCategory(catId, catName) {
+  showModal('Eliminar categoria', 'Eliminar "' + catName + '"? Os pratos desta categoria ficam sem categoria.', async function() {
+    try {
+      var { error } = await supabase
+        .from('menu_categories')
+        .delete()
+        .eq('id', catId);
+      if (error) throw error;
+      allCategories = allCategories.filter(function(c) { return c.id !== catId; });
+      // Remove category from items
+      allMenuItems.forEach(function(item) {
+        if (item.category_id === catId) item.category_id = null;
+      });
+      renderCategoriesAdmin();
+      renderMenuAdmin();
+      showToast('Categoria eliminada', 'success');
+    } catch (err) {
+      console.error('Delete category error:', err);
+      showToast('Erro ao eliminar', 'error');
+    }
+  });
+}
+
+// ============================================
+// ACTIONS: SLOTS
+// ============================================
 async function updateSlotCapacity(slotId, value) {
-  const maxOrders = parseInt(value);
+  var maxOrders = parseInt(value);
   if (isNaN(maxOrders) || maxOrders < 0) return;
   try {
-    const { error } = await supabase
+    var { error } = await supabase
       .from('slot_config')
       .update({ max_orders: maxOrders })
       .eq('id', slotId);
     if (error) throw error;
-    const slot = slotConfigs.find(s => s.id === slotId);
+    var slot = slotConfigs.find(function(s) { return s.id === slotId; });
     if (slot) slot.max_orders = maxOrders;
+    showToast('Capacidade atualizada', 'success');
   } catch (err) {
     console.error('Update slot error:', err);
-    alert('Erro ao atualizar');
+    showToast('Erro ao atualizar', 'error');
   }
 }
 
 async function toggleSlot(slotId, isActive) {
   try {
-    const { error } = await supabase
+    var { error } = await supabase
       .from('slot_config')
       .update({ is_active: isActive })
       .eq('id', slotId);
     if (error) throw error;
-    const slot = slotConfigs.find(s => s.id === slotId);
+    var slot = slotConfigs.find(function(s) { return s.id === slotId; });
     if (slot) slot.is_active = isActive;
     renderSlotsAdmin();
+    showToast(isActive ? 'Horario ativado' : 'Horario desativado', 'success');
   } catch (err) {
     console.error('Toggle slot error:', err);
-    alert('Erro ao atualizar');
+    showToast('Erro ao atualizar', 'error');
   }
+}
+
+async function addSlot() {
+  var time = document.getElementById('new-slot-time').value.trim();
+  var maxOrders = parseInt(document.getElementById('new-slot-pax').value) || 10;
+  var dayVal = document.getElementById('new-slot-day').value;
+  var day_of_week = dayVal === '' ? null : parseInt(dayVal);
+
+  if (!time || !/^\d{2}:\d{2}$/.test(time)) {
+    showToast('Formato de hora invalido (HH:MM)', 'error');
+    return;
+  }
+
+  try {
+    var pos = slotConfigs.length + 1;
+    var { data, error } = await supabase
+      .from('slot_config')
+      .insert({ slot_time: time, max_orders: maxOrders, is_active: true, day_of_week: day_of_week, position: pos })
+      .select()
+      .single();
+    if (error) throw error;
+    slotConfigs.push(data);
+    renderSlotsAdmin();
+    hideAddSlotForm();
+    showToast('Horario adicionado', 'success');
+  } catch (err) {
+    console.error('Add slot error:', err);
+    showToast('Erro ao adicionar', 'error');
+  }
+}
+
+async function deleteSlot(slotId, slotTime) {
+  showModal('Eliminar horario', 'Eliminar o horario ' + slotTime + '?', async function() {
+    try {
+      var { error } = await supabase
+        .from('slot_config')
+        .delete()
+        .eq('id', slotId);
+      if (error) throw error;
+      slotConfigs = slotConfigs.filter(function(s) { return s.id !== slotId; });
+      renderSlotsAdmin();
+      showToast('Horario eliminado', 'success');
+    } catch (err) {
+      console.error('Delete slot error:', err);
+      showToast('Erro ao eliminar', 'error');
+    }
+  });
+}
+
+async function bulkToggleSlots(active) {
+  try {
+    var ids = slotConfigs.map(function(s) { return s.id; });
+    if (ids.length === 0) return;
+    var { error } = await supabase
+      .from('slot_config')
+      .update({ is_active: active })
+      .in('id', ids);
+    if (error) throw error;
+    slotConfigs.forEach(function(s) { s.is_active = active; });
+    renderSlotsAdmin();
+    showToast(active ? 'Todos ativados' : 'Todos desativados', 'success');
+  } catch (err) {
+    console.error('Bulk toggle error:', err);
+    showToast('Erro ao atualizar', 'error');
+  }
+}
+
+// ============================================
+// ACTIONS: CONFIG
+// ============================================
+async function saveConfig() {
+  var payload = {
+    restaurant_name: document.getElementById('cfg-restaurant-name').value.trim(),
+    restaurant_phone: document.getElementById('cfg-restaurant-phone').value.trim(),
+    opening_message: document.getElementById('cfg-opening-message').value.trim(),
+    closed_title: document.getElementById('cfg-closed-title').value.trim(),
+    closed_message: document.getElementById('cfg-closed-message').value.trim()
+  };
+
+  try {
+    if (restaurantConfig.id) {
+      var { error } = await supabase
+        .from('restaurant_config')
+        .update(payload)
+        .eq('id', restaurantConfig.id);
+      if (error) throw error;
+    } else {
+      var { data, error } = await supabase
+        .from('restaurant_config')
+        .upsert(payload)
+        .select()
+        .single();
+      if (error) throw error;
+      restaurantConfig = data;
+    }
+    Object.assign(restaurantConfig, payload);
+    showToast('Configuracao guardada', 'success');
+  } catch (err) {
+    console.error('Save config error:', err);
+    showToast('Erro ao guardar', 'error');
+  }
+}
+
+// ============================================
+// ACTIONS: SCHEDULE
+// ============================================
+async function saveSchedule() {
+  var days = [1, 2, 3, 4, 5, 6, 0];
+  try {
+    for (var i = 0; i < days.length; i++) {
+      var dow = days[i];
+      var mode = document.getElementById('schedule-' + dow).value;
+      var existing = scheduleConfig.find(function(s) { return s.day_of_week === dow; });
+      if (existing) {
+        var { error } = await supabase
+          .from('schedule_config')
+          .update({ mode: mode })
+          .eq('id', existing.id);
+        if (error) throw error;
+        existing.mode = mode;
+      } else {
+        var { data, error } = await supabase
+          .from('schedule_config')
+          .insert({ day_of_week: dow, mode: mode })
+          .select()
+          .single();
+        if (error) throw error;
+        scheduleConfig.push(data);
+      }
+    }
+    showToast('Horario semanal guardado', 'success');
+  } catch (err) {
+    console.error('Save schedule error:', err);
+    showToast('Erro ao guardar', 'error');
+  }
+}
+
+// ============================================
+// QR CODE
+// ============================================
+function renderQR() {
+  var url = document.getElementById('qrUrl').value.trim();
+  var size = parseInt(document.getElementById('qrSize').value);
+  var canvas = document.getElementById('qrCanvas');
+
+  if (!url || typeof QRCode === 'undefined') return;
+
+  QRCode.toCanvas(canvas, url, {
+    width: size,
+    margin: 2,
+    color: { dark: '#4A433F', light: '#FFFFFF' }
+  }, function(err) {
+    if (err) console.error('QR error:', err);
+  });
+}
+
+function downloadQR() {
+  var canvas = document.getElementById('qrCanvas');
+  var link = document.createElement('a');
+  link.download = 'maruoko-qrcode.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
 }
 
 // ============================================
 // TABS
 // ============================================
-function switchTab(tabName) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById(`tab-${tabName}`).classList.add('active');
+function switchTab(tabName, el) {
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
+  if (el) el.classList.add('active');
+  document.getElementById('tab-' + tabName).classList.add('active');
+  if (tabName === 'qrcode') renderQR();
 }
 
 // ============================================

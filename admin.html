@@ -357,12 +357,10 @@
     .order-card {
       background: var(--bg-card);
       border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 12px 14px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
+      border-radius: 12px;
+      padding: 0;
+      margin-bottom: 10px;
+      overflow: hidden;
       transition: border-color 0.2s;
     }
     .order-card.highlight {
@@ -373,26 +371,97 @@
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.01); }
     }
-    .order-number { font-weight: 700; font-size: 17px; color: var(--brand); min-width: 48px; }
-    .order-info { flex: 1; min-width: 0; }
-    .order-name { font-weight: 600; font-size: 15px; color: var(--text); }
-    .order-items-list { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
-    .order-phone { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-    .order-notes { font-size: 12px; color: var(--warning); margin-top: 4px; font-style: italic; }
-    .order-total { font-size: 13px; font-weight: 700; color: var(--brand); margin-top: 4px; }
+    /* Top row: number + name + status */
+    .order-top {
+      display: flex;
+      align-items: center;
+      padding: 14px 16px 10px;
+      gap: 12px;
+    }
+    .order-number {
+      font-weight: 800;
+      font-size: 22px;
+      color: var(--brand);
+      font-family: var(--font-body);
+      letter-spacing: -0.5px;
+    }
+    .order-customer {
+      flex: 1;
+      min-width: 0;
+    }
+    .order-name {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text);
+    }
+    .order-phone {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+    /* Items section */
+    .order-items-section {
+      padding: 0 16px 12px;
+    }
+    .order-item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      font-size: 14px;
+    }
+    .order-item-row + .order-item-row {
+      border-top: 1px solid var(--border);
+    }
+    .order-item-qty {
+      font-weight: 700;
+      color: var(--brand);
+      min-width: 28px;
+    }
+    .order-item-name {
+      flex: 1;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .order-item-price {
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    /* Notes */
+    .order-notes {
+      padding: 0 16px 10px;
+      font-size: 13px;
+      color: var(--warning);
+      font-style: italic;
+    }
+    .order-notes::before { content: '📝 '; }
+    /* Footer: total + actions */
+    .order-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+    }
+    .order-total {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--brand);
+    }
     .order-actions {
       display: flex;
-      flex-direction: column;
-      gap: 5px;
-      align-items: flex-end;
+      gap: 6px;
+      align-items: center;
     }
 
     /* ========== STATUS BADGES ========== */
     .status-badge {
       display: inline-block;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
-      padding: 3px 8px;
+      padding: 5px 12px;
       border-radius: 20px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -405,9 +474,9 @@
 
     /* ========== ACTION BUTTONS ========== */
     .action-btn {
-      padding: 5px 10px;
-      border-radius: 6px;
-      font-size: 11px;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
       font-weight: 600;
       border: none;
       cursor: pointer;
@@ -1869,10 +1938,6 @@ function renderOrders() {
 }
 
 function renderOrderCard(order) {
-  var items = (order.order_items || [])
-    .map(function(i) { return i.quantity + '\u00D7 ' + i.item_name; })
-    .join(', ');
-
   var statusLabels = {
     pending: 'Pendente',
     confirmed: 'Confirmada',
@@ -1881,6 +1946,16 @@ function renderOrderCard(order) {
     cancelled: 'Cancelada'
   };
 
+  // Item rows (each on its own line with price)
+  var itemRows = (order.order_items || []).map(function(i) {
+    var linePrice = (i.item_price * i.quantity).toFixed(2);
+    return '<div class="order-item-row">' +
+      '<span class="order-item-qty">' + i.quantity + '\u00D7</span>' +
+      '<span class="order-item-name">' + escapeHtml(i.item_name) + '</span>' +
+      '<span class="order-item-price">\u20AC' + linePrice + '</span>' +
+    '</div>';
+  }).join('');
+
   var actions = '';
   if (order.status === 'pending' || order.status === 'confirmed') {
     actions = '<button class="action-btn btn-pickup" onclick="updateStatus(\'' + order.id + '\', \'picked_up\')">Levantou</button>' +
@@ -1888,22 +1963,25 @@ function renderOrderCard(order) {
       '<button class="action-btn btn-cancel-order" onclick="cancelOrder(\'' + order.id + '\')">Cancelar</button>';
   }
 
-  var notes = order.notes ? '<div class="order-notes">Nota: ' + escapeHtml(order.notes) + '</div>' : '';
-  var totalAmt = order.total_amount ? '<div class="order-total">\u20AC' + Number(order.total_amount).toFixed(2) + '</div>' : '';
+  var notes = order.notes ? '<div class="order-notes">' + escapeHtml(order.notes) + '</div>' : '';
+  var totalAmt = order.total_amount ? '\u20AC' + Number(order.total_amount).toFixed(2) : '';
 
   return '<div class="order-card">' +
-    '<div class="order-number">#' + String(order.order_number).padStart(3, '0') + '</div>' +
-    '<div class="order-info">' +
-      '<div class="order-name">' + escapeHtml(order.customer_name) + '</div>' +
-      '<div class="order-items-list">' + escapeHtml(items) + '</div>' +
-      '<div class="order-phone">' + escapeHtml(order.customer_phone) + '</div>' +
-      notes + totalAmt +
-    '</div>' +
-    '<div class="order-actions">' +
+    '<div class="order-top">' +
+      '<div class="order-number">#' + String(order.order_number).padStart(3, '0') + '</div>' +
+      '<div class="order-customer">' +
+        '<div class="order-name">' + escapeHtml(order.customer_name) + '</div>' +
+        '<div class="order-phone">' + escapeHtml(order.customer_phone) + '</div>' +
+      '</div>' +
       '<span class="status-badge status-' + order.status + '">' + statusLabels[order.status] + '</span>' +
-      actions +
     '</div>' +
-    '</div>';
+    '<div class="order-items-section">' + itemRows + '</div>' +
+    notes +
+    '<div class="order-footer">' +
+      '<div class="order-total">' + totalAmt + '</div>' +
+      '<div class="order-actions">' + actions + '</div>' +
+    '</div>' +
+  '</div>';
 }
 
 function escapeHtml(str) {

@@ -490,19 +490,59 @@
     .btn-noshow { background: var(--danger-bg); color: var(--danger); }
     .btn-cancel-order { background: #eee; color: #999; }
 
-    /* ========== PREP LIST ========== */
-    .prep-item {
+    /* ========== CLIENT LIST ========== */
+    .client-stats {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .client-stat {
+      flex: 1;
       background: var(--bg-card);
       border: 1.5px solid var(--border);
-      padding: 12px 16px;
-      border-radius: var(--radius-sm);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .client-stat-value { font-size: 22px; font-weight: 800; color: var(--brand); }
+    .client-stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+    .client-card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
       margin-bottom: 8px;
     }
-    .prep-item-name { font-weight: 600; color: var(--text); }
-    .prep-item-qty { font-size: 22px; font-weight: 700; color: var(--brand); }
+    .client-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .client-name {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text);
+      flex: 1;
+    }
+    .client-orders-count {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--brand);
+      background: rgba(142,33,36,0.1);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .client-details {
+      display: flex;
+      gap: 16px;
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+    .client-detail-item { display: flex; align-items: center; gap: 4px; }
+    .client-revenue { font-weight: 700; color: var(--success); }
 
     /* ========== MENU ADMIN ========== */
     /* ========== MENU EDITOR (OPNCLO-style) ========== */
@@ -1294,7 +1334,7 @@
   <!-- TABS -->
   <div class="tabs">
     <button class="tab active" data-tab="orders" onclick="switchTab('orders', this)">Encomendas</button>
-    <button class="tab" data-tab="prep" onclick="switchTab('prep', this)">Preparacao</button>
+    <button class="tab" data-tab="clients" onclick="switchTab('clients', this)">Clientes</button>
     <button class="tab" data-tab="slots" onclick="switchTab('slots', this)">Horarios</button>
     <button class="tab" data-tab="menu" onclick="switchTab('menu', this)">Menu</button>
     <button class="tab" data-tab="qrcode" onclick="switchTab('qrcode', this)">QR Code</button>
@@ -1353,12 +1393,15 @@
     </div>
 
     <!-- TAB: PREP -->
-    <div class="tab-content" id="tab-prep">
+    <!-- TAB: CLIENTS -->
+    <div class="tab-content" id="tab-clients">
       <div class="section-header">
-        <h3>Preparacao</h3>
-        <p id="prepSubtitle">Quantidades totais a preparar hoje</p>
+        <h3>Clientes</h3>
+        <p>Ficha de todos os clientes</p>
       </div>
-      <div id="prepList"></div>
+      <input type="text" class="search-input" id="clientSearch" placeholder="Pesquisar cliente..." oninput="filterClients()">
+      <div class="client-stats" id="clientStats"></div>
+      <div id="clientList"></div>
     </div>
 
     <!-- TAB: SLOTS -->
@@ -1751,7 +1794,7 @@ async function init() {
   updateCalDisplay();
   updateClock();
   setInterval(updateClock, 1000);
-  await Promise.all([loadOrders(), loadMenu(), loadSlots(), loadCategories(), loadConfig(), loadSchedule()]);
+  await Promise.all([loadOrders(), loadMenu(), loadSlots(), loadCategories(), loadConfig(), loadSchedule(), loadClients()]);
   setInterval(loadOrders, 15000);
   renderQR();
 }
@@ -2013,6 +2056,110 @@ function renderPrep() {
     .map(function(entry) {
       return '<div class="prep-item"><span class="prep-item-name">' + escapeHtml(entry[0]) + '</span><span class="prep-item-qty">' + entry[1] + '</span></div>';
     }).join('');
+}
+
+// ============================================
+// CLIENT DATABASE
+// ============================================
+let allClients = [];
+let clientSearchQuery = '';
+
+async function loadClients() {
+  try {
+    // Fetch ALL orders (not just today)
+    var { data, error } = await supabase
+      .from('orders')
+      .select('customer_name, customer_phone, total_amount, status, slot_date')
+      .not('status', 'eq', 'cancelled');
+
+    if (error) throw error;
+
+    // Build client map: merge by phone (if valid) or by name
+    var clientMap = {};
+
+    (data || []).forEach(function(o) {
+      var phone = (o.customer_phone || '').trim();
+      var name = (o.customer_name || '').trim();
+      var hasPhone = phone.length >= 5;
+
+      // Key: phone if valid, otherwise lowercase name
+      var key = hasPhone ? 'phone:' + phone : 'name:' + name.toLowerCase();
+
+      if (!clientMap[key]) {
+        clientMap[key] = {
+          name: name,
+          phone: hasPhone ? phone : '',
+          totalOrders: 0,
+          totalRevenue: 0,
+          lastDate: null
+        };
+      }
+
+      var client = clientMap[key];
+      // Keep the longest/most complete name
+      if (name.length > client.name.length) client.name = name;
+      if (hasPhone && !client.phone) client.phone = phone;
+
+      client.totalOrders++;
+      client.totalRevenue += Number(o.total_amount || 0);
+      if (!client.lastDate || o.slot_date > client.lastDate) client.lastDate = o.slot_date;
+    });
+
+    allClients = Object.values(clientMap).sort(function(a, b) {
+      return b.totalOrders - a.totalOrders;
+    });
+
+    renderClients();
+  } catch (err) {
+    console.error('Load clients error:', err);
+  }
+}
+
+function filterClients() {
+  clientSearchQuery = document.getElementById('clientSearch').value.trim().toLowerCase();
+  renderClients();
+}
+
+function renderClients() {
+  var filtered = allClients;
+  if (clientSearchQuery) {
+    filtered = allClients.filter(function(c) {
+      return c.name.toLowerCase().includes(clientSearchQuery) ||
+             c.phone.includes(clientSearchQuery);
+    });
+  }
+
+  // Stats
+  var totalClients = allClients.length;
+  var totalRevenue = allClients.reduce(function(s, c) { return s + c.totalRevenue; }, 0);
+  var totalOrders = allClients.reduce(function(s, c) { return s + c.totalOrders; }, 0);
+
+  document.getElementById('clientStats').innerHTML =
+    '<div class="client-stat"><div class="client-stat-value">' + totalClients + '</div><div class="client-stat-label">Clientes</div></div>' +
+    '<div class="client-stat"><div class="client-stat-value">' + totalOrders + '</div><div class="client-stat-label">Reservas</div></div>' +
+    '<div class="client-stat"><div class="client-stat-value">' + totalRevenue.toFixed(0) + '\u20AC</div><div class="client-stat-label">Receita total</div></div>';
+
+  var container = document.getElementById('clientList');
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>Nenhum cliente encontrado</p></div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(function(c) {
+    var lastDate = c.lastDate ? new Date(c.lastDate + 'T12:00:00').toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' }) : '—';
+
+    return '<div class="client-card">' +
+      '<div class="client-top">' +
+        '<div class="client-name">' + escapeHtml(c.name) + '</div>' +
+        '<span class="client-orders-count">' + c.totalOrders + ' reserva' + (c.totalOrders > 1 ? 's' : '') + '</span>' +
+      '</div>' +
+      '<div class="client-details">' +
+        (c.phone ? '<div class="client-detail-item">\uD83D\uDCDE ' + escapeHtml(c.phone) + '</div>' : '') +
+        '<div class="client-detail-item client-revenue">\u20AC' + c.totalRevenue.toFixed(2) + '</div>' +
+        '<div class="client-detail-item">Ultima: ' + lastDate + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 // ============================================

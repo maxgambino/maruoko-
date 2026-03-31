@@ -1917,8 +1917,28 @@ async function init() {
   updateClock();
   setInterval(updateClock, 1000);
   await Promise.all([loadOrders(), loadMenu(), loadSlots(), loadCategories(), loadConfig(), loadSchedule(), loadClients()]);
-  setInterval(loadOrders, 15000);
   renderQR();
+
+  // Realtime: instant order updates via WebSocket
+  supabase
+    .channel('orders-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, function(payload) {
+      console.log('Realtime order event:', payload.eventType);
+      loadOrders();
+      loadClients();
+    })
+    .subscribe();
+
+  // Realtime: instant order_items updates (for when items are inserted)
+  supabase
+    .channel('order-items-realtime')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'order_items' }, function() {
+      loadOrders();
+    })
+    .subscribe();
+
+  // Fallback polling every 30s in case WebSocket drops
+  setInterval(function() { loadOrders(); loadClients(); }, 30000);
 }
 
 // ============================================

@@ -1343,23 +1343,24 @@
     /* ========== SOUND TOGGLE ========== */
     /* ========== FULLSCREEN MODE ========== */
     .fs-btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 8px;
+      position: absolute;
+      top: 8px;
+      right: 0;
+      padding: 6px 12px;
+      border-radius: 6px;
       border: 1.5px solid var(--border);
       background: var(--bg-card);
-      color: var(--text);
-      font-size: 14px;
+      color: var(--text-muted);
+      font-size: 12px;
       font-weight: 600;
       font-family: var(--font-body);
       cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 16px;
+      gap: 4px;
     }
     .fs-btn:hover { border-color: var(--brand); color: var(--brand); }
+    #tab-orders { position: relative; }
     .fs-exit-btn {
       position: fixed;
       top: 16px;
@@ -1443,6 +1444,7 @@
 
     <!-- TAB: ORDERS -->
     <div class="tab-content active" id="tab-orders">
+      <button class="fs-btn" onclick="toggleFullscreen()">⛶ Mode service</button>
       <div class="clock-bar">
         <div class="digital-clock" id="digitalClock">--:--</div>
       </div>
@@ -1654,8 +1656,6 @@
         <button class="btn-save" style="margin-top:10px; width:100%; padding:12px;" onclick="saveSchedule()">Guardar</button>
       </div>
 
-      <!-- Fullscreen service mode -->
-      <button class="fs-btn" onclick="toggleFullscreen()">⛶ Mode service</button>
     </div>
 
   </div>

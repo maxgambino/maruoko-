@@ -247,6 +247,96 @@
       margin-bottom: 6px;
       color: var(--brand);
     }
+
+    /* Phone input with country selector */
+    .phone-input-wrap {
+      display: flex;
+      gap: 0;
+      position: relative;
+    }
+    .country-select {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 12px;
+      border: 1.5px solid var(--border);
+      border-right: none;
+      border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+      background: var(--bg);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+      min-width: 90px;
+      transition: border-color 0.2s;
+    }
+    .country-select:focus { border-color: var(--brand); }
+    .country-select .cs-arrow {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-left: 2px;
+    }
+    .phone-input-wrap input[type="tel"] {
+      flex: 1;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-family: var(--font-body);
+      font-size: 16px;
+      color: var(--text);
+      background: var(--bg-card);
+      outline: none;
+      transition: border-color 0.2s;
+      min-width: 0;
+    }
+    .phone-input-wrap input[type="tel"]:focus { border-color: var(--brand); }
+    .country-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-lg);
+      z-index: 200;
+      margin-top: 4px;
+      overflow: hidden;
+    }
+    .country-dropdown.open { display: block; }
+    .country-search {
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      background: var(--bg);
+    }
+    .country-search::placeholder { color: var(--text-muted); }
+    .country-list {
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .country-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .country-item:hover { background: var(--bg); }
+    .country-item:active { background: #f0ebe3; }
+    .country-item .ci-flag { font-size: 18px; }
+    .country-item .ci-name { flex: 1; color: var(--text); }
+    .country-item .ci-dial { color: var(--text-muted); font-weight: 600; font-size: 13px; }
     .form-group input {
       width: 100%;
       padding: 14px 16px;
@@ -680,7 +770,16 @@
       </div>
       <div class="form-group">
         <label for="customerPhone">Telemóvel</label>
-        <input type="tel" id="customerPhone" placeholder="+351 ..." autocomplete="tel">
+        <div class="phone-input-wrap">
+          <button type="button" class="country-select" id="countrySelect" onclick="toggleCountryDropdown()">
+            <span id="csFlag">🇵🇹</span> <span id="csDial">+351</span> <span class="cs-arrow">▾</span>
+          </button>
+          <div class="country-dropdown" id="countryDropdown">
+            <input type="text" class="country-search" id="countrySearch" placeholder="Pesquisar país..." oninput="filterCountries()">
+            <div class="country-list" id="countryList"></div>
+          </div>
+          <input type="tel" id="customerPhone" placeholder="912 345 678" autocomplete="tel">
+        </div>
       </div>
       <div class="form-group">
         <label for="customerEmail">Email</label>
@@ -1145,6 +1244,98 @@ async function selectDate(dateStr) {
 // ============================================
 // SUBMIT ORDER
 // ============================================
+// ============================================
+// COUNTRY SELECTOR
+// ============================================
+const countries = [
+  { code: 'PT', name: 'Portugal', dial: '+351', flag: '🇵🇹' },
+  { code: 'BR', name: 'Brasil', dial: '+55', flag: '🇧🇷' },
+  { code: 'ES', name: 'Espanha', dial: '+34', flag: '🇪🇸' },
+  { code: 'FR', name: 'França', dial: '+33', flag: '🇫🇷' },
+  { code: 'DE', name: 'Alemanha', dial: '+49', flag: '🇩🇪' },
+  { code: 'IT', name: 'Itália', dial: '+39', flag: '🇮🇹' },
+  { code: 'GB', name: 'Reino Unido', dial: '+44', flag: '🇬🇧' },
+  { code: 'NL', name: 'Países Baixos', dial: '+31', flag: '🇳🇱' },
+  { code: 'BE', name: 'Bélgica', dial: '+32', flag: '🇧🇪' },
+  { code: 'CH', name: 'Suíça', dial: '+41', flag: '🇨🇭' },
+  { code: 'AT', name: 'Áustria', dial: '+43', flag: '🇦🇹' },
+  { code: 'IE', name: 'Irlanda', dial: '+353', flag: '🇮🇪' },
+  { code: 'PL', name: 'Polónia', dial: '+48', flag: '🇵🇱' },
+  { code: 'SE', name: 'Suécia', dial: '+46', flag: '🇸🇪' },
+  { code: 'DK', name: 'Dinamarca', dial: '+45', flag: '🇩🇰' },
+  { code: 'NO', name: 'Noruega', dial: '+47', flag: '🇳🇴' },
+  { code: 'FI', name: 'Finlândia', dial: '+358', flag: '🇫🇮' },
+  { code: 'GR', name: 'Grécia', dial: '+30', flag: '🇬🇷' },
+  { code: 'CZ', name: 'Chéquia', dial: '+420', flag: '🇨🇿' },
+  { code: 'RO', name: 'Roménia', dial: '+40', flag: '🇷🇴' },
+  { code: 'LU', name: 'Luxemburgo', dial: '+352', flag: '🇱🇺' },
+  { code: 'US', name: 'Estados Unidos', dial: '+1', flag: '🇺🇸' },
+  { code: 'CA', name: 'Canadá', dial: '+1', flag: '🇨🇦' },
+  { code: 'JP', name: 'Japão', dial: '+81', flag: '🇯🇵' },
+  { code: 'AU', name: 'Austrália', dial: '+61', flag: '🇦🇺' },
+  { code: 'AO', name: 'Angola', dial: '+244', flag: '🇦🇴' },
+  { code: 'MZ', name: 'Moçambique', dial: '+258', flag: '🇲🇿' },
+  { code: 'CV', name: 'Cabo Verde', dial: '+238', flag: '🇨🇻' },
+  { code: 'MA', name: 'Marrocos', dial: '+212', flag: '🇲🇦' },
+  { code: 'IN', name: 'Índia', dial: '+91', flag: '🇮🇳' },
+  { code: 'CN', name: 'China', dial: '+86', flag: '🇨🇳' }
+];
+
+let selectedCountry = countries[0]; // Portugal default
+
+function renderCountryList(filter) {
+  const list = document.getElementById('countryList');
+  const query = (filter || '').toLowerCase();
+  const filtered = query
+    ? countries.filter(c => c.name.toLowerCase().includes(query) || c.dial.includes(query) || c.code.toLowerCase().includes(query))
+    : countries;
+
+  list.innerHTML = filtered.map((c, i) => {
+    const realIndex = countries.indexOf(c);
+    return '<div class="country-item" onclick="selectCountry(' + realIndex + ')">' +
+      '<span class="ci-flag">' + c.flag + '</span>' +
+      '<span class="ci-name">' + c.name + '</span>' +
+      '<span class="ci-dial">' + c.dial + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function toggleCountryDropdown() {
+  const dd = document.getElementById('countryDropdown');
+  const isOpen = dd.classList.contains('open');
+  if (isOpen) {
+    dd.classList.remove('open');
+  } else {
+    dd.classList.add('open');
+    document.getElementById('countrySearch').value = '';
+    renderCountryList();
+    setTimeout(function() { document.getElementById('countrySearch').focus(); }, 50);
+  }
+}
+
+function filterCountries() {
+  renderCountryList(document.getElementById('countrySearch').value);
+}
+
+function selectCountry(index) {
+  selectedCountry = countries[index];
+  document.getElementById('csFlag').textContent = selectedCountry.flag;
+  document.getElementById('csDial').textContent = selectedCountry.dial;
+  document.getElementById('countryDropdown').classList.remove('open');
+  document.getElementById('customerPhone').focus();
+}
+
+// Close dropdown on click outside
+document.addEventListener('click', function(e) {
+  var wrap = document.querySelector('.phone-input-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('countryDropdown').classList.remove('open');
+  }
+});
+
+// ============================================
+// EMAIL / CANCEL
+// ============================================
 function generateToken() {
   // Generate a UUID v4-like cancel token
   return 'xxxx-xxxx-xxxx'.replace(/x/g, function() {
@@ -1223,12 +1414,12 @@ async function submitOrder() {
   const email = document.getElementById('customerEmail').value.trim();
   const notes = document.getElementById('orderNotes').value.trim();
 
-  if (!name || !phone) {
-    showError('Preenche o teu nome e telemóvel');
+  if (!name || !phone || !email) {
+    showError('Preenche todos os campos obrigatórios');
     return;
   }
 
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     showError('Email invalido');
     return;
   }
@@ -1242,13 +1433,14 @@ async function submitOrder() {
     const bookingDate = selectedDate;
     const total = getTotal();
     const cancelToken = generateToken();
+    const fullPhone = selectedCountry.dial + phone.replace(/\s/g, '');
 
     // Insert order
     const { data: order, error: orderErr } = await supabase
       .from('orders')
       .insert({
         customer_name: name,
-        customer_phone: phone,
+        customer_phone: fullPhone,
         customer_email: email || null,
         cancel_token: cancelToken,
         slot_time: selectedSlot,
@@ -1283,9 +1475,7 @@ async function submitOrder() {
     if (itemsErr) throw itemsErr;
 
     // Send confirmation email (non-blocking)
-    if (email) {
-      sendConfirmationEmail(order, email, name, cancelToken);
-    }
+    sendConfirmationEmail(order, email, name, cancelToken);
 
     // Show confirmation
     document.getElementById('confirmOrderNumber').textContent = `#${String(order.order_number).padStart(3, '0')}`;

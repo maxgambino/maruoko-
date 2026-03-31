@@ -1975,7 +1975,7 @@ function renderOrderCard(order) {
       '<span class="status-badge status-' + order.status + '">' + statusLabels[order.status] + '</span>' +
     '</div>' +
     '<div class="order-items-section">' + itemRows + '</div>' +
-    (order.customer_phone ? '<div class="order-phone-row">' + escapeHtml(order.customer_phone) + '</div>' : '') +
+    (order.customer_phone && order.customer_phone.length >= 5 ? '<div class="order-phone-row">' + escapeHtml(order.customer_phone) + '</div>' : '') +
     notes +
     '<div class="order-footer">' +
       '<div class="order-total">' + totalAmt + '</div>' +

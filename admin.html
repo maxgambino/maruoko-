@@ -390,15 +390,17 @@
       min-width: 0;
     }
     .order-name {
+      flex: 1;
       font-weight: 700;
       font-size: 16px;
       color: var(--text);
     }
-    .order-phone {
+    .order-phone-row {
+      padding: 0 16px 8px;
       font-size: 13px;
       color: var(--text-muted);
-      margin-top: 1px;
     }
+    .order-phone-row::before { content: '📞 '; }
     /* Items section */
     .order-items-section {
       padding: 0 16px 12px;
@@ -1969,13 +1971,11 @@ function renderOrderCard(order) {
   return '<div class="order-card">' +
     '<div class="order-top">' +
       '<div class="order-number">#' + String(order.order_number).padStart(3, '0') + '</div>' +
-      '<div class="order-customer">' +
-        '<div class="order-name">' + escapeHtml(order.customer_name) + '</div>' +
-        '<div class="order-phone">' + escapeHtml(order.customer_phone) + '</div>' +
-      '</div>' +
+      '<div class="order-name">' + escapeHtml(order.customer_name) + '</div>' +
       '<span class="status-badge status-' + order.status + '">' + statusLabels[order.status] + '</span>' +
     '</div>' +
     '<div class="order-items-section">' + itemRows + '</div>' +
+    (order.customer_phone ? '<div class="order-phone-row">' + escapeHtml(order.customer_phone) + '</div>' : '') +
     notes +
     '<div class="order-footer">' +
       '<div class="order-total">' + totalAmt + '</div>' +

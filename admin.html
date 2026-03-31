@@ -285,6 +285,305 @@
     .prep-item-qty { font-size: 22px; font-weight: 700; color: var(--brand); }
 
     /* ========== MENU ADMIN ========== */
+    /* ========== MENU EDITOR (OPNCLO-style) ========== */
+    .menu-editor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .menu-editor-header h3 { margin: 0; }
+    .add-dropdown-wrap { position: relative; }
+    .add-dropdown-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--brand);
+      color: white;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .add-dropdown-btn:hover { opacity: 0.9; }
+    .add-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      min-width: 200px;
+      z-index: 50;
+      overflow: hidden;
+    }
+    .add-dropdown-menu.open { display: block; }
+    .add-dropdown-option {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      transition: background 0.15s;
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .add-dropdown-option:hover { background: var(--bg); }
+    .add-dropdown-option .add-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .add-dropdown-option .add-label { font-weight: 600; }
+    .add-dropdown-option .add-hint { font-size: 12px; color: var(--text-muted); }
+
+    /* Section card (category) */
+    .section-card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .section-card:hover { border-color: var(--text-light); }
+    .section-header-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      gap: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .section-grip {
+      color: var(--text-light);
+      font-size: 18px;
+      cursor: grab;
+      opacity: 0;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+    .section-card:hover .section-grip { opacity: 1; }
+    .section-thumb {
+      width: 44px; height: 44px;
+      border-radius: 8px;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .section-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .section-meta { flex: 1; min-width: 0; }
+    .section-name-row {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      flex-shrink: 0;
+    }
+    .section-dot.off { background: var(--text-light); }
+    .section-name {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 15px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .section-count {
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--bg);
+      color: var(--text-muted);
+      padding: 2px 8px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .section-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .section-actions {
+      display: flex; align-items: center; gap: 8px;
+      flex-shrink: 0;
+    }
+    .section-toggle-btn,
+    .section-chevron {
+      background: none; border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      font-size: 18px;
+      transition: transform 0.2s;
+      display: flex; align-items: center;
+    }
+    .section-chevron.collapsed { transform: rotate(-90deg); }
+    .section-items {
+      border-top: 1px solid var(--border);
+      padding: 0;
+      transition: max-height 0.3s ease;
+      overflow: hidden;
+    }
+    .section-items.collapsed { display: none; }
+
+    /* Item row (inside section) */
+    .item-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px 10px 28px;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+      position: relative;
+    }
+    .item-row:last-child { border-bottom: none; }
+    .item-row:hover { background: rgba(0,0,0,0.015); }
+    .item-grip {
+      color: var(--text-light);
+      font-size: 14px;
+      cursor: grab;
+      opacity: 0;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+    .item-row:hover .item-grip { opacity: 1; }
+    .item-thumb {
+      width: 40px; height: 40px;
+      border-radius: 8px;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .item-info { flex: 1; min-width: 0; }
+    .item-name {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .item-name.unavailable { text-decoration: line-through; opacity: 0.5; }
+    .item-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .item-price-inline {
+      font-weight: 700;
+      color: var(--brand);
+      font-size: 14px;
+      min-width: 60px;
+      text-align: right;
+      flex-shrink: 0;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      border: 1.5px solid transparent;
+      transition: border-color 0.15s;
+    }
+    .item-price-inline:hover { border-color: var(--border); }
+    .item-price-input {
+      width: 70px;
+      font-weight: 700;
+      color: var(--brand);
+      font-size: 14px;
+      font-family: var(--font-body);
+      text-align: right;
+      padding: 4px 6px;
+      border-radius: 6px;
+      border: 1.5px solid var(--brand);
+      outline: none;
+      background: var(--bg-card);
+    }
+    .item-toggle-small {
+      width: 36px; height: 20px;
+      border-radius: 10px;
+      background: var(--text-light);
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .item-toggle-small.on { background: var(--success); }
+    .item-toggle-small::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: white;
+      transition: transform 0.2s;
+    }
+    .item-toggle-small.on::after { transform: translateX(16px); }
+    .item-delete-btn {
+      background: none; border: none;
+      color: var(--text-light);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+      opacity: 0;
+      transition: opacity 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+    .item-row:hover .item-delete-btn { opacity: 1; }
+    .item-delete-btn:hover { color: var(--danger); }
+    .item-edit-btn {
+      background: none; border: none;
+      color: var(--text-light);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px;
+      opacity: 0;
+      transition: opacity 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+    .item-row:hover .item-edit-btn { opacity: 1; }
+    .item-edit-btn:hover { color: var(--brand); }
+
+    /* Add item inside section */
+    .section-add-item {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 10px 16px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+      font-family: var(--font-body);
+      border: none; background: none; width: 100%;
+    }
+    .section-add-item:hover { color: var(--brand); background: rgba(0,0,0,0.02); }
+
+    /* Uncategorized section */
+    .uncategorized-header {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding: 16px 0 8px;
+    }
+
+    /* Legacy compat */
     .menu-admin-item {
       background: var(--bg-card);
       border: 1.5px solid var(--border);
@@ -486,7 +785,7 @@
     .bulk-btn:hover { border-color: var(--brand); color: var(--brand); }
     .bulk-btn:active { transform: scale(0.96); }
 
-    /* ========== CATEGORY ADMIN ========== */
+    /* ========== CATEGORY ADMIN (legacy) ========== */
     .category-admin-item {
       background: var(--bg-card);
       border: 1.5px solid var(--border);
@@ -511,6 +810,59 @@
       margin-bottom: 8px;
       margin-top: 8px;
     }
+
+    /* ========== EDIT SIDEBAR (slide-in panel) ========== */
+    .edit-sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 200;
+      animation: fadeIn 0.2s;
+    }
+    .edit-sidebar-overlay.open { display: block; }
+    .edit-sidebar {
+      position: fixed;
+      top: 0; right: -420px;
+      width: 400px;
+      max-width: 90vw;
+      height: 100vh;
+      background: var(--bg-card);
+      box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+      z-index: 201;
+      transition: right 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .edit-sidebar.open { right: 0; }
+    .edit-sidebar-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .edit-sidebar-header h4 { margin: 0; font-size: 16px; color: var(--text); }
+    .edit-sidebar-close {
+      background: none; border: none;
+      font-size: 20px; color: var(--text-muted);
+      cursor: pointer; padding: 4px;
+    }
+    .edit-sidebar-close:hover { color: var(--text); }
+    .edit-sidebar-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .edit-sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 8px;
+      flex-shrink: 0;
+    }
+    .edit-sidebar-footer .btn-save { flex: 1; padding: 12px; }
+    .edit-sidebar-footer .btn-cancel { flex: 1; padding: 12px; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     /* ========== QR CODE TAB ========== */
     .qr-section { text-align: center; }
@@ -820,70 +1172,50 @@
 
     <!-- TAB: MENU -->
     <div class="tab-content" id="tab-menu">
-      <div class="section-header">
-        <h3>Menu</h3>
-        <p>Gere os pratos, precos e descricoes</p>
-      </div>
-
-      <!-- Categories section -->
-      <div style="margin-bottom:20px;">
-        <h4 style="font-size:16px; font-weight:700; color:var(--brand); margin-bottom:10px;">Categorias</h4>
-        <button class="btn-add" onclick="showAddCategoryForm()">+ Adicionar categoria</button>
-        <div id="newCategoryForm" style="display:none;">
-          <div class="menu-admin-item new-item">
-            <div class="menu-edit-row">
-              <label>Nome</label>
-              <input type="text" id="new-cat-name" placeholder="Nome da categoria">
-            </div>
-            <div class="menu-edit-row">
-              <label>Posicao (ordem)</label>
-              <input type="number" min="1" id="new-cat-position" placeholder="1">
-            </div>
-            <div class="menu-edit-actions" style="margin-top:10px;">
-              <button class="btn-save" onclick="addCategory()">Adicionar</button>
-              <button class="btn-cancel" onclick="hideAddCategoryForm()">Cancelar</button>
-            </div>
-          </div>
+      <div class="menu-editor-header">
+        <div>
+          <h3 style="margin:0;">Menu</h3>
+          <p style="margin:4px 0 0; font-size:13px; color:var(--text-muted);">Gere as seccoes e os pratos</p>
         </div>
-        <div id="categoriesAdmin"></div>
-      </div>
-
-      <!-- Items section -->
-      <h4 style="font-size:16px; font-weight:700; color:var(--brand); margin-bottom:10px;">Pratos</h4>
-      <button class="btn-add" onclick="showAddItemForm()">+ Adicionar prato</button>
-      <div id="newItemForm" style="display:none;">
-        <div class="menu-admin-item new-item">
-          <div class="menu-edit-row">
-            <label>Nome</label>
-            <input type="text" id="new-item-name" placeholder="Nome do prato">
-          </div>
-          <div class="menu-edit-row">
-            <label>Descricao</label>
-            <textarea id="new-item-desc" placeholder="Descricao do prato"></textarea>
-          </div>
-          <div class="menu-edit-row">
-            <label>Preco (EUR)</label>
-            <input type="number" step="0.50" min="0" id="new-item-price" placeholder="0.00">
-          </div>
-          <div class="menu-edit-row">
-            <label>Posicao (ordem)</label>
-            <input type="number" min="1" id="new-item-position" placeholder="1">
-          </div>
-          <div class="menu-edit-row">
-            <label>Categoria</label>
-            <select id="new-item-category"></select>
-          </div>
-          <div class="menu-edit-row">
-            <label>URL da imagem</label>
-            <input type="text" id="new-item-image" placeholder="https://...">
-          </div>
-          <div class="menu-edit-actions" style="margin-top:10px;">
-            <button class="btn-save" onclick="addMenuItem()">Adicionar</button>
-            <button class="btn-cancel" onclick="hideAddItemForm()">Cancelar</button>
+        <div class="add-dropdown-wrap">
+          <button class="add-dropdown-btn" onclick="toggleAddDropdown()">
+            <span style="font-size:18px;">+</span> Adicionar
+          </button>
+          <div class="add-dropdown-menu" id="addDropdownMenu">
+            <button class="add-dropdown-option" onclick="openAddSectionSidebar(); closeAddDropdown();">
+              <div class="add-icon">&#9776;</div>
+              <div>
+                <div class="add-label">Seccao</div>
+                <div class="add-hint">Agrupar os pratos</div>
+              </div>
+            </button>
+            <button class="add-dropdown-option" onclick="openAddItemSidebar(); closeAddDropdown();">
+              <div class="add-icon">&#127860;</div>
+              <div>
+                <div class="add-label">Prato</div>
+                <div class="add-hint">Adicionar um prato</div>
+              </div>
+            </button>
           </div>
         </div>
       </div>
-      <div id="menuAdmin"></div>
+
+      <!-- Editor content: sections with nested items -->
+      <div id="menuEditor"></div>
+    </div>
+
+    <!-- Edit Sidebar (shared for section + item editing) -->
+    <div class="edit-sidebar-overlay" id="editOverlay" onclick="closeEditSidebar()"></div>
+    <div class="edit-sidebar" id="editSidebar">
+      <div class="edit-sidebar-header">
+        <h4 id="sidebarTitle">Editar</h4>
+        <button class="edit-sidebar-close" onclick="closeEditSidebar()">&times;</button>
+      </div>
+      <div class="edit-sidebar-body" id="sidebarBody"></div>
+      <div class="edit-sidebar-footer">
+        <button class="btn-cancel" onclick="closeEditSidebar()">Cancelar</button>
+        <button class="btn-save" id="sidebarSaveBtn" onclick="sidebarSave()">Guardar</button>
+      </div>
     </div>
 
     <!-- TAB: QR CODE -->
@@ -1095,7 +1427,7 @@ async function loadMenu() {
       .order('position');
     if (error) throw error;
     allMenuItems = data || [];
-    renderMenuAdmin();
+    renderMenuEditor();
   } catch (err) {
     console.error('Load menu error:', err);
   }
@@ -1123,7 +1455,7 @@ async function loadCategories() {
       .order('position');
     if (error) throw error;
     allCategories = data || [];
-    renderCategoriesAdmin();
+    renderMenuEditor();
     populateCategoryDropdowns();
   } catch (err) {
     console.error('Load categories error:', err);
@@ -1340,53 +1672,21 @@ function renderSlotsAdmin() {
 }
 
 // ============================================
-// RENDER: CATEGORIES ADMIN
+// RENDER: MENU EDITOR (OPNCLO-style)
 // ============================================
-function renderCategoriesAdmin() {
-  var container = document.getElementById('categoriesAdmin');
+let collapsedSections = {};
+let sidebarMode = null; // 'add-section', 'edit-section', 'add-item', 'edit-item'
+let sidebarTargetId = null;
+
+function renderMenuEditor() {
+  var container = document.getElementById('menuEditor');
   if (!container) return;
 
-  if (allCategories.length === 0) {
-    container.innerHTML = '<div class="empty-state" style="padding:16px 0;"><p>Nenhuma categoria</p></div>';
-    return;
-  }
-
-  container.innerHTML = allCategories.map(function(cat) {
-    return '<div class="category-admin-item" id="cat-' + cat.id + '">' +
-      '<div class="category-info">' +
-        '<div class="cat-name">' + escapeHtml(cat.name) + '</div>' +
-        '<div class="cat-pos">Posicao: ' + cat.position + '</div>' +
-      '</div>' +
-      '<div class="category-actions">' +
-        '<div class="toggle-switch ' + (cat.active !== false ? 'on' : '') + '" onclick="toggleCategory(\'' + cat.id + '\', ' + (cat.active === false) + ')"></div>' +
-        '<button class="btn-edit" style="margin:0;" onclick="editCategoryPrompt(\'' + cat.id + '\')">Editar</button>' +
-        '<button class="btn-delete" style="margin:0;" onclick="deleteCategory(\'' + cat.id + '\', \'' + escapeHtml(cat.name).replace(/'/g, "\\'") + '\')">X</button>' +
-      '</div>' +
-    '</div>';
-  }).join('');
-}
-
-function populateCategoryDropdowns() {
-  var opts = '<option value="">Sem categoria</option>' +
-    allCategories.map(function(c) { return '<option value="' + c.id + '">' + escapeHtml(c.name) + '</option>'; }).join('');
-  var newSel = document.getElementById('new-item-category');
-  if (newSel) newSel.innerHTML = opts;
-}
-
-// ============================================
-// RENDER: MENU ADMIN
-// ============================================
-function renderMenuAdmin() {
-  var container = document.getElementById('menuAdmin');
-
   // Group items by category
-  var catMap = {};
-  allCategories.forEach(function(c) { catMap[c.id] = c.name; });
-
   var grouped = {};
   var uncategorized = [];
   allMenuItems.forEach(function(item) {
-    if (item.category_id && catMap[item.category_id]) {
+    if (item.category_id && allCategories.find(c => c.id === item.category_id)) {
       if (!grouped[item.category_id]) grouped[item.category_id] = [];
       grouped[item.category_id].push(item);
     } else {
@@ -1394,69 +1694,299 @@ function renderMenuAdmin() {
     }
   });
 
+  if (allCategories.length === 0 && uncategorized.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">&#9776;</div><p>Nenhuma seccao ou prato</p><p style="font-size:13px; color:var(--text-muted);">Usa o botao "+ Adicionar" para comecar</p></div>';
+    return;
+  }
+
   var html = '';
 
-  // Render by category order
+  // Render sections (categories) with nested items
   allCategories.forEach(function(cat) {
-    var items = grouped[cat.id];
-    if (!items || items.length === 0) return;
-    html += '<div class="category-group-header">' + escapeHtml(cat.name) + '</div>';
-    html += items.map(renderMenuItemCard).join('');
+    var items = grouped[cat.id] || [];
+    var isCollapsed = collapsedSections[cat.id] || false;
+    var isActive = cat.is_active !== false;
+
+    html += '<div class="section-card" id="section-' + cat.id + '">' +
+      '<div class="section-header-row" onclick="toggleSectionCollapse(\'' + cat.id + '\')">' +
+        '<span class="section-grip">&#8942;&#8942;</span>' +
+        '<div class="section-thumb">' +
+          '&#9776;' +
+        '</div>' +
+        '<div class="section-meta">' +
+          '<div class="section-name-row">' +
+            '<span class="section-dot ' + (isActive ? '' : 'off') + '"></span>' +
+            '<span class="section-name">' + escapeHtml(cat.name) + '</span>' +
+            '<span class="section-count">' + items.length + '</span>' +
+          '</div>' +
+          (cat.description ? '<div class="section-desc">' + escapeHtml(cat.description) + '</div>' : '') +
+        '</div>' +
+        '<div class="section-actions" onclick="event.stopPropagation()">' +
+          '<div class="item-toggle-small ' + (isActive ? 'on' : '') + '" onclick="toggleCategory(\'' + cat.id + '\', ' + !isActive + ')"></div>' +
+          '<button class="item-edit-btn" onclick="openEditSectionSidebar(\'' + cat.id + '\')" style="opacity:1;" title="Editar seccao">&#9998;</button>' +
+          '<button class="item-delete-btn" onclick="deleteCategory(\'' + cat.id + '\', \'' + escapeHtml(cat.name).replace(/'/g, "\\'") + '\')" style="opacity:1;" title="Eliminar seccao">&#128465;</button>' +
+          '<button class="section-chevron ' + (isCollapsed ? 'collapsed' : '') + '">&#9660;</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="section-items ' + (isCollapsed ? 'collapsed' : '') + '">';
+
+    // Render item rows inside section
+    items.forEach(function(item) {
+      html += renderItemRow(item);
+    });
+
+    // Add item button inside section
+    html += '<button class="section-add-item" onclick="openAddItemSidebar(\'' + cat.id + '\')">' +
+      '<span>+</span> Adicionar prato' +
+    '</button>';
+
+    html += '</div></div>';
   });
 
-  // Uncategorized
+  // Uncategorized items
   if (uncategorized.length > 0) {
-    if (allCategories.length > 0) {
-      html += '<div class="category-group-header">Sem categoria</div>';
-    }
-    html += uncategorized.map(renderMenuItemCard).join('');
+    html += '<div class="uncategorized-header">Sem categoria</div>';
+    html += '<div class="section-card">';
+    html += '<div class="section-items">';
+    uncategorized.forEach(function(item) {
+      html += renderItemRow(item);
+    });
+    html += '</div></div>';
   }
 
   container.innerHTML = html;
-  populateCategoryDropdowns();
 }
 
-function renderMenuItemCard(item) {
+function renderItemRow(item) {
+  var thumbContent = item.image_url
+    ? '<img src="' + escapeHtml(item.image_url) + '" alt="">'
+    : '&#127860;';
+
+  return '<div class="item-row" id="item-' + item.id + '">' +
+    '<span class="item-grip">&#8942;</span>' +
+    '<div class="item-thumb" onclick="openEditItemSidebar(\'' + item.id + '\')">' +
+      thumbContent +
+    '</div>' +
+    '<div class="item-info" onclick="openEditItemSidebar(\'' + item.id + '\')" style="cursor:pointer;">' +
+      '<div class="item-name ' + (!item.available ? 'unavailable' : '') + '">' + escapeHtml(item.name) + '</div>' +
+      (item.description ? '<div class="item-desc">' + escapeHtml(item.description) + '</div>' : '') +
+    '</div>' +
+    '<span class="item-price-inline" onclick="startInlinePrice(event, \'' + item.id + '\', ' + item.price + ')">' + Number(item.price).toFixed(2) + '\u20AC</span>' +
+    '<div class="item-toggle-small ' + (item.available ? 'on' : '') + '" onclick="toggleItem(\'' + item.id + '\', ' + !item.available + ')"></div>' +
+    '<button class="item-edit-btn" onclick="openEditItemSidebar(\'' + item.id + '\')" title="Editar">&#9998;</button>' +
+    '<button class="item-delete-btn" onclick="deleteMenuItem(\'' + item.id + '\', \'' + escapeHtml(item.name).replace(/'/g, "\\'") + '\')" title="Eliminar">&#128465;</button>' +
+  '</div>';
+}
+
+// Add dropdown
+function toggleAddDropdown() {
+  document.getElementById('addDropdownMenu').classList.toggle('open');
+}
+function closeAddDropdown() {
+  document.getElementById('addDropdownMenu').classList.remove('open');
+}
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.add-dropdown-wrap')) closeAddDropdown();
+});
+
+// Section collapse
+function toggleSectionCollapse(catId) {
+  collapsedSections[catId] = !collapsedSections[catId];
+  renderMenuEditor();
+}
+
+// Inline price editing
+function startInlinePrice(e, itemId, currentPrice) {
+  e.stopPropagation();
+  var el = e.currentTarget;
+  var input = document.createElement('input');
+  input.type = 'number';
+  input.step = '0.50';
+  input.min = '0';
+  input.value = currentPrice;
+  input.className = 'item-price-input';
+  el.replaceWith(input);
+  input.focus();
+  input.select();
+
+  function save() {
+    var newPrice = parseFloat(input.value);
+    if (!isNaN(newPrice) && newPrice !== currentPrice) {
+      supabase.from('menu_items').update({ price: newPrice }).eq('id', itemId).then(function() {
+        var item = allMenuItems.find(i => i.id === itemId);
+        if (item) item.price = newPrice;
+        renderMenuEditor();
+        showToast('Preco atualizado', 'success');
+      });
+    } else {
+      renderMenuEditor();
+    }
+  }
+
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', function(ev) {
+    if (ev.key === 'Enter') { input.blur(); }
+    if (ev.key === 'Escape') { renderMenuEditor(); }
+  });
+}
+
+// ============================================
+// SIDEBAR: ADD/EDIT SECTION
+// ============================================
+function openAddSectionSidebar() {
+  sidebarMode = 'add-section';
+  sidebarTargetId = null;
+  document.getElementById('sidebarTitle').textContent = 'Nova seccao';
+  document.getElementById('sidebarBody').innerHTML =
+    '<div class="menu-edit-row"><label>Nome</label><input type="text" id="sb-sec-name" placeholder="Ex: Okonomiyaki"></div>' +
+    '<div class="menu-edit-row"><label>Descricao (opcional)</label><textarea id="sb-sec-desc" placeholder="Descricao da seccao..."></textarea></div>' +
+    '<div class="menu-edit-row"><label>Posicao (ordem)</label><input type="number" min="1" id="sb-sec-pos" value="' + (allCategories.length + 1) + '"></div>';
+  openSidebar();
+}
+
+function openEditSectionSidebar(catId) {
+  var cat = allCategories.find(c => c.id === catId);
+  if (!cat) return;
+  sidebarMode = 'edit-section';
+  sidebarTargetId = catId;
+  document.getElementById('sidebarTitle').textContent = 'Editar seccao';
+  document.getElementById('sidebarBody').innerHTML =
+    '<div class="menu-edit-row"><label>Nome</label><input type="text" id="sb-sec-name" value="' + escapeHtml(cat.name) + '"></div>' +
+    '<div class="menu-edit-row"><label>Descricao (opcional)</label><textarea id="sb-sec-desc">' + escapeHtml(cat.description || '') + '</textarea></div>' +
+    '<div class="menu-edit-row"><label>Posicao (ordem)</label><input type="number" min="1" id="sb-sec-pos" value="' + (cat.position || 1) + '"></div>';
+  openSidebar();
+}
+
+// ============================================
+// SIDEBAR: ADD/EDIT ITEM
+// ============================================
+function openAddItemSidebar(defaultCatId) {
+  sidebarMode = 'add-item';
+  sidebarTargetId = null;
+  document.getElementById('sidebarTitle').textContent = 'Novo prato';
+
+  var catOpts = '<option value="">Sem categoria</option>' +
+    allCategories.map(function(c) {
+      return '<option value="' + c.id + '"' + (c.id === defaultCatId ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>';
+    }).join('');
+
+  document.getElementById('sidebarBody').innerHTML =
+    '<div class="menu-edit-row"><label>Nome</label><input type="text" id="sb-item-name" placeholder="Nome do prato"></div>' +
+    '<div class="menu-edit-row"><label>Descricao</label><textarea id="sb-item-desc" placeholder="Descricao do prato..."></textarea></div>' +
+    '<div class="menu-edit-row"><label>Preco (EUR)</label><input type="number" step="0.50" min="0" id="sb-item-price" placeholder="0.00"></div>' +
+    '<div class="menu-edit-row"><label>Seccao</label><select id="sb-item-cat">' + catOpts + '</select></div>' +
+    '<div class="menu-edit-row"><label>URL da imagem</label><input type="text" id="sb-item-image" placeholder="https://..."></div>' +
+    '<div class="menu-edit-row"><label>Posicao (ordem)</label><input type="number" min="1" id="sb-item-pos" value="' + (allMenuItems.length + 1) + '"></div>';
+  openSidebar();
+}
+
+function openEditItemSidebar(itemId) {
+  var item = allMenuItems.find(i => i.id === itemId);
+  if (!item) return;
+  sidebarMode = 'edit-item';
+  sidebarTargetId = itemId;
+  document.getElementById('sidebarTitle').textContent = 'Editar prato';
+
   var catOpts = '<option value="">Sem categoria</option>' +
     allCategories.map(function(c) {
       return '<option value="' + c.id + '"' + (item.category_id === c.id ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>';
     }).join('');
 
-  var thumb = item.image_url ? '<img class="menu-item-thumb" src="' + escapeHtml(item.image_url) + '" alt="">' : '';
-
-  return '<div class="menu-admin-item" id="menu-item-' + item.id + '">' +
-    '<div class="menu-admin-top">' +
-      thumb +
-      '<div class="menu-admin-info">' +
-        '<div class="name">' + escapeHtml(item.name) + '</div>' +
-        (item.description ? '<div class="desc">' + escapeHtml(item.description) + '</div>' : '') +
-        '<div class="price">' + Number(item.price).toFixed(2) + '\u20AC</div>' +
-      '</div>' +
-      '<div class="toggle-switch ' + (item.available ? 'on' : '') + '" onclick="toggleItem(\'' + item.id + '\', ' + !item.available + ')"></div>' +
-    '</div>' +
-    '<div style="display:flex;">' +
-      '<button class="btn-edit" onclick="toggleEditForm(\'' + item.id + '\')">Editar</button>' +
-      '<button class="btn-delete" onclick="deleteMenuItem(\'' + item.id + '\', \'' + escapeHtml(item.name).replace(/'/g, "\\'") + '\')">Eliminar</button>' +
-    '</div>' +
-    '<div class="menu-edit-form" id="edit-' + item.id + '">' +
-      '<div class="menu-edit-row"><label>Nome</label><input type="text" id="edit-name-' + item.id + '" value="' + escapeHtml(item.name) + '"></div>' +
-      '<div class="menu-edit-row"><label>Descricao</label><textarea id="edit-desc-' + item.id + '">' + escapeHtml(item.description || '') + '</textarea></div>' +
-      '<div class="menu-edit-row"><label>Preco (EUR)</label><input type="number" step="0.50" min="0" id="edit-price-' + item.id + '" value="' + item.price + '"></div>' +
-      '<div class="menu-edit-row"><label>Posicao</label><input type="number" min="1" id="edit-pos-' + item.id + '" value="' + (item.position || '') + '"></div>' +
-      '<div class="menu-edit-row"><label>Categoria</label><select id="edit-cat-' + item.id + '">' + catOpts + '</select></div>' +
-      '<div class="menu-edit-row"><label>URL da imagem</label><input type="text" id="edit-img-' + item.id + '" value="' + escapeHtml(item.image_url || '') + '"></div>' +
-      '<div class="menu-edit-actions">' +
-        '<button class="btn-save" onclick="saveMenuItem(\'' + item.id + '\')">Guardar</button>' +
-        '<button class="btn-cancel" onclick="toggleEditForm(\'' + item.id + '\')">Cancelar</button>' +
-      '</div>' +
-    '</div>' +
-  '</div>';
+  document.getElementById('sidebarBody').innerHTML =
+    '<div class="menu-edit-row"><label>Nome</label><input type="text" id="sb-item-name" value="' + escapeHtml(item.name) + '"></div>' +
+    '<div class="menu-edit-row"><label>Descricao</label><textarea id="sb-item-desc">' + escapeHtml(item.description || '') + '</textarea></div>' +
+    '<div class="menu-edit-row"><label>Preco (EUR)</label><input type="number" step="0.50" min="0" id="sb-item-price" value="' + item.price + '"></div>' +
+    '<div class="menu-edit-row"><label>Seccao</label><select id="sb-item-cat">' + catOpts + '</select></div>' +
+    '<div class="menu-edit-row"><label>URL da imagem</label><input type="text" id="sb-item-image" value="' + escapeHtml(item.image_url || '') + '"></div>' +
+    '<div class="menu-edit-row"><label>Posicao (ordem)</label><input type="number" min="1" id="sb-item-pos" value="' + (item.position || 1) + '"></div>';
+  openSidebar();
 }
 
-function toggleEditForm(itemId) {
-  var form = document.getElementById('edit-' + itemId);
-  form.classList.toggle('open');
+// ============================================
+// SIDEBAR: OPEN / CLOSE / SAVE
+// ============================================
+function openSidebar() {
+  document.getElementById('editOverlay').classList.add('open');
+  setTimeout(function() {
+    document.getElementById('editSidebar').classList.add('open');
+  }, 10);
 }
+
+function closeEditSidebar() {
+  document.getElementById('editSidebar').classList.remove('open');
+  setTimeout(function() {
+    document.getElementById('editOverlay').classList.remove('open');
+  }, 300);
+  sidebarMode = null;
+  sidebarTargetId = null;
+}
+
+async function sidebarSave() {
+  var btn = document.getElementById('sidebarSaveBtn');
+  btn.disabled = true;
+  btn.textContent = 'A guardar...';
+
+  try {
+    if (sidebarMode === 'add-section') {
+      var name = document.getElementById('sb-sec-name').value.trim();
+      var desc = document.getElementById('sb-sec-desc').value.trim();
+      var pos = parseInt(document.getElementById('sb-sec-pos').value) || 1;
+      if (!name) { showToast('Nome obrigatorio', 'error'); return; }
+      var { error } = await supabase.from('menu_categories').insert({ name: name, description: desc || null, position: pos });
+      if (error) throw error;
+      showToast('Seccao criada!', 'success');
+    }
+    else if (sidebarMode === 'edit-section') {
+      var name = document.getElementById('sb-sec-name').value.trim();
+      var desc = document.getElementById('sb-sec-desc').value.trim();
+      var pos = parseInt(document.getElementById('sb-sec-pos').value) || 1;
+      if (!name) { showToast('Nome obrigatorio', 'error'); return; }
+      var { error } = await supabase.from('menu_categories').update({ name: name, description: desc || null, position: pos }).eq('id', sidebarTargetId);
+      if (error) throw error;
+      showToast('Seccao atualizada!', 'success');
+    }
+    else if (sidebarMode === 'add-item') {
+      var name = document.getElementById('sb-item-name').value.trim();
+      var desc = document.getElementById('sb-item-desc').value.trim();
+      var price = parseFloat(document.getElementById('sb-item-price').value) || 0;
+      var catId = document.getElementById('sb-item-cat').value || null;
+      var imageUrl = document.getElementById('sb-item-image').value.trim() || null;
+      var pos = parseInt(document.getElementById('sb-item-pos').value) || 1;
+      if (!name) { showToast('Nome obrigatorio', 'error'); return; }
+      var { error } = await supabase.from('menu_items').insert({ name: name, description: desc || null, price: price, category_id: catId, image_url: imageUrl, position: pos });
+      if (error) throw error;
+      showToast('Prato adicionado!', 'success');
+    }
+    else if (sidebarMode === 'edit-item') {
+      var name = document.getElementById('sb-item-name').value.trim();
+      var desc = document.getElementById('sb-item-desc').value.trim();
+      var price = parseFloat(document.getElementById('sb-item-price').value) || 0;
+      var catId = document.getElementById('sb-item-cat').value || null;
+      var imageUrl = document.getElementById('sb-item-image').value.trim() || null;
+      var pos = parseInt(document.getElementById('sb-item-pos').value) || 1;
+      if (!name) { showToast('Nome obrigatorio', 'error'); return; }
+      var { error } = await supabase.from('menu_items').update({ name: name, description: desc || null, price: price, category_id: catId, image_url: imageUrl, position: pos }).eq('id', sidebarTargetId);
+      if (error) throw error;
+      showToast('Prato atualizado!', 'success');
+    }
+
+    closeEditSidebar();
+    await Promise.all([loadMenu(), loadCategories()]);
+    renderMenuEditor();
+  } catch (err) {
+    console.error('Sidebar save error:', err);
+    showToast('Erro ao guardar', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar';
+  }
+}
+
+// Legacy compat aliases
+function renderCategoriesAdmin() { renderMenuEditor(); }
+function renderMenuAdmin() { renderMenuEditor(); }
+function populateCategoryDropdowns() {}
 
 // ============================================
 // RENDER: CONFIG
@@ -1503,28 +2033,11 @@ function renderSchedule() {
 // ============================================
 // ADD/EDIT FORMS
 // ============================================
-function showAddItemForm() {
-  document.getElementById('newItemForm').style.display = 'block';
-  document.getElementById('new-item-name').focus();
-}
-function hideAddItemForm() {
-  document.getElementById('newItemForm').style.display = 'none';
-  document.getElementById('new-item-name').value = '';
-  document.getElementById('new-item-desc').value = '';
-  document.getElementById('new-item-price').value = '';
-  document.getElementById('new-item-position').value = '';
-  document.getElementById('new-item-image').value = '';
-}
-
-function showAddCategoryForm() {
-  document.getElementById('newCategoryForm').style.display = 'block';
-  document.getElementById('new-cat-name').focus();
-}
-function hideAddCategoryForm() {
-  document.getElementById('newCategoryForm').style.display = 'none';
-  document.getElementById('new-cat-name').value = '';
-  document.getElementById('new-cat-position').value = '';
-}
+// Legacy form functions (now handled by sidebar)
+function showAddItemForm() { openAddItemSidebar(); }
+function hideAddItemForm() { closeEditSidebar(); }
+function showAddCategoryForm() { openAddSectionSidebar(); }
+function hideAddCategoryForm() { closeEditSidebar(); }
 
 function showAddSlotForm() {
   document.getElementById('newSlotForm').style.display = 'block';
@@ -1564,37 +2077,8 @@ function cancelOrder(orderId) {
 // ============================================
 // ACTIONS: MENU ITEMS
 // ============================================
-async function addMenuItem() {
-  var name = document.getElementById('new-item-name').value.trim();
-  var description = document.getElementById('new-item-desc').value.trim();
-  var price = parseFloat(document.getElementById('new-item-price').value);
-  var position = parseInt(document.getElementById('new-item-position').value) || (allMenuItems.length + 1);
-  var category_id = document.getElementById('new-item-category').value || null;
-  var image_url = document.getElementById('new-item-image').value.trim() || null;
-
-  if (!name || isNaN(price)) {
-    showToast('Preenche o nome e o preco', 'error');
-    return;
-  }
-
-  try {
-    var { data, error } = await supabase
-      .from('menu_items')
-      .insert({ name: name, description: description || null, price: price, position: position, available: true, category_id: category_id, image_url: image_url })
-      .select()
-      .single();
-
-    if (error) throw error;
-    allMenuItems.push(data);
-    allMenuItems.sort(function(a, b) { return a.position - b.position; });
-    renderMenuAdmin();
-    hideAddItemForm();
-    showToast('Prato adicionado', 'success');
-  } catch (err) {
-    console.error('Add menu item error:', err);
-    showToast('Erro ao adicionar', 'error');
-  }
-}
+// addMenuItem is now handled by sidebarSave() 'add-item' mode
+async function addMenuItem() { openAddItemSidebar(); }
 
 async function deleteMenuItem(itemId, itemName) {
   showModal('Eliminar prato', 'Eliminar "' + itemName + '"? Esta acao e irreversivel.', async function() {
@@ -1605,7 +2089,7 @@ async function deleteMenuItem(itemId, itemName) {
         .eq('id', itemId);
       if (error) throw error;
       allMenuItems = allMenuItems.filter(function(m) { return m.id !== itemId; });
-      renderMenuAdmin();
+      renderMenuEditor();
       showToast('Prato eliminado', 'success');
     } catch (err) {
       console.error('Delete menu item error:', err);
@@ -1623,7 +2107,7 @@ async function toggleItem(itemId, available) {
     if (error) throw error;
     var item = allMenuItems.find(function(m) { return m.id === itemId; });
     if (item) item.available = available;
-    renderMenuAdmin();
+    renderMenuEditor();
     showToast(available ? 'Prato ativado' : 'Prato desativado', 'success');
   } catch (err) {
     console.error('Toggle error:', err);
@@ -1661,7 +2145,7 @@ async function saveMenuItem(itemId) {
       item.image_url = image_url;
     }
     allMenuItems.sort(function(a, b) { return a.position - b.position; });
-    renderMenuAdmin();
+    renderMenuEditor();
     showToast('Prato guardado', 'success');
   } catch (err) {
     console.error('Save menu error:', err);
@@ -1672,81 +2156,28 @@ async function saveMenuItem(itemId) {
 // ============================================
 // ACTIONS: CATEGORIES
 // ============================================
-async function addCategory() {
-  var name = document.getElementById('new-cat-name').value.trim();
-  var position = parseInt(document.getElementById('new-cat-position').value) || (allCategories.length + 1);
+// addCategory is now handled by sidebarSave() 'add-section' mode
+async function addCategory() { openAddSectionSidebar(); }
 
-  if (!name) {
-    showToast('Preenche o nome da categoria', 'error');
-    return;
-  }
-
-  try {
-    var { data, error } = await supabase
-      .from('menu_categories')
-      .insert({ name: name, position: position, active: true })
-      .select()
-      .single();
-    if (error) throw error;
-    allCategories.push(data);
-    allCategories.sort(function(a, b) { return a.position - b.position; });
-    renderCategoriesAdmin();
-    renderMenuAdmin();
-    hideAddCategoryForm();
-    showToast('Categoria adicionada', 'success');
-  } catch (err) {
-    console.error('Add category error:', err);
-    showToast('Erro ao adicionar', 'error');
-  }
-}
-
-async function toggleCategory(catId, active) {
+async function toggleCategory(catId, isActive) {
   try {
     var { error } = await supabase
       .from('menu_categories')
-      .update({ active: active })
+      .update({ is_active: isActive })
       .eq('id', catId);
     if (error) throw error;
     var cat = allCategories.find(function(c) { return c.id === catId; });
-    if (cat) cat.active = active;
-    renderCategoriesAdmin();
-    showToast(active ? 'Categoria ativada' : 'Categoria desativada', 'success');
+    if (cat) cat.is_active = isActive;
+    renderMenuEditor();
+    showToast(isActive ? 'Seccao ativada' : 'Seccao desativada', 'success');
   } catch (err) {
     console.error('Toggle category error:', err);
     showToast('Erro ao atualizar', 'error');
   }
 }
 
-function editCategoryPrompt(catId) {
-  var cat = allCategories.find(function(c) { return c.id === catId; });
-  if (!cat) return;
-  var newName = prompt('Novo nome:', cat.name);
-  if (newName === null) return;
-  newName = newName.trim();
-  if (!newName) return;
-  var newPos = prompt('Nova posicao:', cat.position);
-  if (newPos === null) return;
-  editCategory(catId, newName, parseInt(newPos) || cat.position);
-}
-
-async function editCategory(catId, name, position) {
-  try {
-    var { error } = await supabase
-      .from('menu_categories')
-      .update({ name: name, position: position })
-      .eq('id', catId);
-    if (error) throw error;
-    var cat = allCategories.find(function(c) { return c.id === catId; });
-    if (cat) { cat.name = name; cat.position = position; }
-    allCategories.sort(function(a, b) { return a.position - b.position; });
-    renderCategoriesAdmin();
-    renderMenuAdmin();
-    showToast('Categoria atualizada', 'success');
-  } catch (err) {
-    console.error('Edit category error:', err);
-    showToast('Erro ao atualizar', 'error');
-  }
-}
+// editCategoryPrompt now uses sidebar
+function editCategoryPrompt(catId) { openEditSectionSidebar(catId); }
 
 async function deleteCategory(catId, catName) {
   showModal('Eliminar categoria', 'Eliminar "' + catName + '"? Os pratos desta categoria ficam sem categoria.', async function() {
@@ -1761,8 +2192,8 @@ async function deleteCategory(catId, catName) {
       allMenuItems.forEach(function(item) {
         if (item.category_id === catId) item.category_id = null;
       });
-      renderCategoriesAdmin();
-      renderMenuAdmin();
+      renderMenuEditor();
+      renderMenuEditor();
       showToast('Categoria eliminada', 'success');
     } catch (err) {
       console.error('Delete category error:', err);

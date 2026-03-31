@@ -1389,7 +1389,7 @@ async function sendConfirmationEmail(order, email, name, cancelToken) {
     ].join('');
 
     // Call Supabase Edge Function to send email
-    var res = await fetch(SUPABASE_URL + '/functions/v1/send-email', {
+    var res = await fetch(SUPABASE_URL + '/functions/v1/resend-email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

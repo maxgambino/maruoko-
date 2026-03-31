@@ -140,6 +140,7 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       padding-bottom: 4px;
+      justify-content: center;
     }
     .filter-pill {
       padding: 6px 14px;
@@ -159,6 +160,27 @@
       color: white;
       border-color: var(--brand);
     }
+
+    /* ========== DIGITAL CLOCK ========== */
+    .clock-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+    .digital-clock {
+      font-family: var(--font-body);
+      font-size: 52px;
+      font-weight: 800;
+      color: var(--brand);
+      letter-spacing: 2px;
+      line-height: 1;
+    }
+    .digital-clock .clock-sep {
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
 
     /* ========== REFRESH BAR ========== */
     .refresh-bar {
@@ -961,6 +983,7 @@
       font-size: 14px;
     }
     .empty-state .icon { font-size: 36px; margin-bottom: 8px; }
+    .empty-state .mascot { width: 160px; height: auto; margin-bottom: 12px; }
 
     /* ========== TOAST ========== */
     .toast-container {
@@ -1102,6 +1125,9 @@
 
     <!-- TAB: ORDERS -->
     <div class="tab-content active" id="tab-orders">
+      <div class="clock-bar">
+        <div class="digital-clock" id="digitalClock">--H--</div>
+      </div>
       <div class="refresh-bar">
         <span class="last-update" id="lastUpdate">&mdash;</span>
         <button class="refresh-btn" onclick="loadOrders()">Atualizar</button>
@@ -1379,10 +1405,23 @@ function closeModalOutside(e) {
 // ============================================
 // INIT
 // ============================================
+// ============================================
+// DIGITAL CLOCK
+// ============================================
+function updateClock() {
+  var now = new Date();
+  var h = String(now.getHours()).padStart(2, '0');
+  var m = String(now.getMinutes()).padStart(2, '0');
+  var el = document.getElementById('digitalClock');
+  if (el) el.innerHTML = h + '<span class="clock-sep">H</span>' + m;
+}
+
 async function init() {
   document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('pt-PT', {
     weekday: 'short', day: 'numeric', month: 'short'
   });
+  updateClock();
+  setInterval(updateClock, 1000);
   await Promise.all([loadOrders(), loadMenu(), loadSlots(), loadCategories(), loadConfig(), loadSchedule()]);
   setInterval(loadOrders, 15000);
   renderQR();
@@ -1545,7 +1584,7 @@ function renderOrders() {
   const container = document.getElementById('ordersContainer');
 
   if (filtered.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">&#128237;</div><p>Nenhuma reserva encontrada</p></div>';
+    container.innerHTML = '<div class="empty-state"><img class="mascot" src="Gemini_Generated_Image_wtzutjwtzutjwtzu.png" alt=""><p>Nenhuma reserva encontrada</p></div>';
     return;
   }
 

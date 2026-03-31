@@ -682,6 +682,10 @@
         <label for="customerPhone">Telemóvel</label>
         <input type="tel" id="customerPhone" placeholder="+351 ..." autocomplete="tel">
       </div>
+      <div class="form-group">
+        <label for="customerEmail">Email</label>
+        <input type="email" id="customerEmail" placeholder="o.teu@email.com" autocomplete="email">
+      </div>
 
       <div class="form-group">
         <label for="orderNotes">Notas (opcional)</label>
@@ -1141,13 +1145,91 @@ async function selectDate(dateStr) {
 // ============================================
 // SUBMIT ORDER
 // ============================================
+function generateToken() {
+  // Generate a UUID v4-like cancel token
+  return 'xxxx-xxxx-xxxx'.replace(/x/g, function() {
+    return Math.floor(Math.random() * 16).toString(16);
+  });
+}
+
+async function sendConfirmationEmail(order, email, name, cancelToken) {
+  try {
+    const bookingDate = selectedDate;
+    var dateLabel = new Date(bookingDate + 'T12:00:00').toLocaleDateString('pt-PT', {
+      weekday: 'long', day: 'numeric', month: 'long'
+    });
+
+    var itemsList = Object.entries(cart)
+      .filter(function(e) { return e[1] > 0; })
+      .map(function(e) {
+        var item = menuItems.find(function(m) { return m.id === e[0]; });
+        return e[1] + '× ' + item.name + ' — €' + (item.price * e[1]).toFixed(2);
+      }).join('<br>');
+
+    var cancelUrl = window.location.origin + window.location.pathname.replace('index.html', '') + 'cancel.html?token=' + cancelToken;
+    var orderNum = '#' + String(order.order_number).padStart(3, '0');
+
+    var html = [
+      '<div style="font-family:DM Sans,Helvetica,Arial,sans-serif;max-width:480px;margin:0 auto;color:#4A433F;">',
+      '<div style="background:#8E2124;padding:20px;text-align:center;border-radius:12px 12px 0 0;">',
+      '<h1 style="color:white;margin:0;font-size:22px;">MARUOKO</h1>',
+      '<p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:13px;">Hiroshima Okonomiyaki</p>',
+      '</div>',
+      '<div style="background:#fff;padding:24px;border:1px solid #E0D9D0;border-top:none;">',
+      '<h2 style="color:#8E2124;margin:0 0 4px;">Reserva confirmada!</h2>',
+      '<p style="color:#9A938D;font-size:14px;margin:0 0 16px;">Obrigado, ' + name + '!</p>',
+      '<div style="background:#F4F0E8;border-radius:10px;padding:16px;margin-bottom:16px;">',
+      '<div style="font-size:28px;font-weight:700;color:#8E2124;text-align:center;letter-spacing:2px;">' + orderNum + '</div>',
+      '<p style="text-align:center;color:#9A938D;font-size:12px;margin:4px 0 0;">Apresenta este número quando chegares</p>',
+      '</div>',
+      '<table style="width:100%;font-size:14px;border-collapse:collapse;">',
+      '<tr><td style="padding:8px 0;color:#9A938D;">Data</td><td style="padding:8px 0;text-align:right;font-weight:600;">' + dateLabel + '</td></tr>',
+      '<tr style="border-top:1px solid #E0D9D0;"><td style="padding:8px 0;color:#9A938D;">Horário</td><td style="padding:8px 0;text-align:right;font-weight:600;">' + selectedSlot + '</td></tr>',
+      '<tr style="border-top:1px solid #E0D9D0;"><td style="padding:8px 0;color:#9A938D;">Pratos</td><td style="padding:8px 0;text-align:right;">' + itemsList + '</td></tr>',
+      '<tr style="border-top:2px solid #8E2124;"><td style="padding:10px 0;font-weight:700;color:#8E2124;font-size:16px;">Total</td><td style="padding:10px 0;text-align:right;font-weight:700;color:#8E2124;font-size:16px;">€' + getTotal().toFixed(2) + '</td></tr>',
+      '</table>',
+      '</div>',
+      '<div style="background:#fff;padding:16px 24px 24px;border:1px solid #E0D9D0;border-top:none;border-radius:0 0 12px 12px;text-align:center;">',
+      '<p style="color:#9A938D;font-size:13px;margin:0 0 12px;">Precisas de cancelar a tua reserva?</p>',
+      '<a href="' + cancelUrl + '" style="display:inline-block;padding:10px 24px;background:#C0392B;color:white;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">Cancelar reserva</a>',
+      '</div>',
+      '</div>'
+    ].join('');
+
+    // Call Supabase Edge Function to send email
+    var res = await fetch(SUPABASE_URL + '/functions/v1/send-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({
+        to: email,
+        subject: 'Reserva confirmada ' + orderNum + ' — MARUOKO',
+        html: html
+      })
+    });
+
+    if (!res.ok) console.error('Email send failed:', await res.text());
+  } catch (e) {
+    console.error('Email error:', e);
+    // Don't block the order confirmation if email fails
+  }
+}
+
 async function submitOrder() {
   const name = document.getElementById('customerName').value.trim();
   const phone = document.getElementById('customerPhone').value.trim();
+  const email = document.getElementById('customerEmail').value.trim();
   const notes = document.getElementById('orderNotes').value.trim();
 
   if (!name || !phone) {
     showError('Preenche o teu nome e telemóvel');
+    return;
+  }
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showError('Email invalido');
     return;
   }
 
@@ -1159,6 +1241,7 @@ async function submitOrder() {
   try {
     const bookingDate = selectedDate;
     const total = getTotal();
+    const cancelToken = generateToken();
 
     // Insert order
     const { data: order, error: orderErr } = await supabase
@@ -1166,6 +1249,8 @@ async function submitOrder() {
       .insert({
         customer_name: name,
         customer_phone: phone,
+        customer_email: email || null,
+        cancel_token: cancelToken,
         slot_time: selectedSlot,
         slot_date: bookingDate,
         total_amount: total,
@@ -1196,6 +1281,11 @@ async function submitOrder() {
       .insert(items);
 
     if (itemsErr) throw itemsErr;
+
+    // Send confirmation email (non-blocking)
+    if (email) {
+      sendConfirmationEmail(order, email, name, cancelToken);
+    }
 
     // Show confirmation
     document.getElementById('confirmOrderNumber').textContent = `#${String(order.order_number).padStart(3, '0')}`;
@@ -1243,6 +1333,7 @@ function updateConfirmBtn() {
 }
 document.getElementById('customerName').addEventListener('input', updateConfirmBtn);
 document.getElementById('customerPhone').addEventListener('input', updateConfirmBtn);
+document.getElementById('customerEmail').addEventListener('input', updateConfirmBtn);
 
 // ============================================
 // GO

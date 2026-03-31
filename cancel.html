@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cancelar reserva — MARUOKO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+  <style>
+    :root {
+      --brand: #8E2124;
+      --bg: #F4F0E8;
+      --bg-card: #FFFFFF;
+      --text: #4A433F;
+      --text-muted: #9A938D;
+      --border: #E0D9D0;
+      --danger: #C0392B;
+      --success: #3A7D44;
+      --radius: 16px;
+      --font-body: 'DM Sans', -apple-system, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+    .card h1 {
+      font-size: 22px;
+      color: var(--brand);
+      margin-bottom: 8px;
+    }
+    .card p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .order-info {
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .order-info .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 14px;
+    }
+    .order-info .row + .row {
+      border-top: 1px solid var(--border);
+    }
+    .order-info .row .label { color: var(--text-muted); }
+    .order-info .row .value { font-weight: 600; }
+    .btn-cancel {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--danger);
+      color: white;
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 10px;
+    }
+    .btn-cancel:hover { background: #a53125; }
+    .btn-cancel:active { transform: scale(0.98); }
+    .btn-cancel:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-back {
+      display: inline-block;
+      padding: 10px 20px;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 14px;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .btn-back:hover { color: var(--text); }
+    .status-msg {
+      padding: 16px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .status-msg.error {
+      background: #FDE8E8;
+      color: var(--danger);
+    }
+    .status-msg.success {
+      background: #E8F5E9;
+      color: var(--success);
+    }
+    .loading {
+      color: var(--text-muted);
+      padding: 40px 0;
+    }
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--brand);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <div class="loading" id="loadingState">
+    <div class="spinner"></div>
+    <p>A carregar a reserva...</p>
+  </div>
+
+  <div id="orderView" style="display:none;">
+    <h1>Cancelar reserva?</h1>
+    <p>Tens a certeza que queres cancelar esta reserva? Esta ação não pode ser desfeita.</p>
+
+    <div class="order-info" id="orderInfo"></div>
+
+    <button class="btn-cancel" id="btnCancel" onclick="cancelOrder()">
+      Sim, cancelar reserva
+    </button>
+    <a href="index.html" class="btn-back">Voltar</a>
+  </div>
+
+  <div id="cancelledView" style="display:none;">
+    <div class="status-msg success">Reserva cancelada com sucesso</div>
+    <h1>Reserva cancelada</h1>
+    <p>A tua reserva foi cancelada. Se mudares de ideias, podes fazer uma nova reserva.</p>
+    <a href="index.html" class="btn-back" style="background:var(--brand);color:white;border-radius:var(--radius);padding:14px 24px;text-decoration:none;display:inline-block;font-weight:600;">Nova reserva</a>
+  </div>
+
+  <div id="errorView" style="display:none;">
+    <div class="status-msg error" id="errorMsg"></div>
+    <a href="index.html" class="btn-back" style="background:var(--brand);color:white;border-radius:var(--radius);padding:14px 24px;text-decoration:none;display:inline-block;font-weight:600;">Voltar à página principal</a>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://onkgxuxxrquhaqcthazv.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ua2d4dXh4cnF1aGFxY3RoYXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Nzc1MzUsImV4cCI6MjA5MDM1MzUzNX0.utp7mAJQaUP06PnbF9RgEH_oAqhOdl3OyQYBpwmCyvs';
+
+const _sb = window.supabase || window.Supabase;
+const supabase = _sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let orderData = null;
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+
+  if (!token) {
+    showError('Link invalido. Nenhum token encontrado.');
+    return;
+  }
+
+  try {
+    // Fetch order by cancel token
+    const { data: order, error } = await supabase
+      .from('orders')
+      .select('id, order_number, customer_name, slot_date, slot_time, total_amount, status')
+      .eq('cancel_token', token)
+      .single();
+
+    if (error || !order) {
+      showError('Reserva não encontrada. O link pode ter expirado ou ser invalido.');
+      return;
+    }
+
+    if (order.status === 'cancelled') {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('cancelledView').style.display = 'block';
+      return;
+    }
+
+    orderData = order;
+
+    // Display order info
+    var dateLabel = new Date(order.slot_date + 'T12:00:00').toLocaleDateString('pt-PT', {
+      weekday: 'long', day: 'numeric', month: 'long'
+    });
+
+    document.getElementById('orderInfo').innerHTML = [
+      '<div class="row"><span class="label">Reserva</span><span class="value">#' + String(order.order_number).padStart(3, '0') + '</span></div>',
+      '<div class="row"><span class="label">Nome</span><span class="value">' + order.customer_name + '</span></div>',
+      '<div class="row"><span class="label">Data</span><span class="value">' + dateLabel + '</span></div>',
+      '<div class="row"><span class="label">Horário</span><span class="value">' + order.slot_time + '</span></div>',
+      '<div class="row"><span class="label">Total</span><span class="value">€' + order.total_amount.toFixed(2) + '</span></div>'
+    ].join('');
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('orderView').style.display = 'block';
+
+  } catch (err) {
+    console.error('Init error:', err);
+    showError('Erro ao carregar. Tenta de novo.');
+  }
+}
+
+async function cancelOrder() {
+  if (!orderData) return;
+
+  const btn = document.getElementById('btnCancel');
+  btn.disabled = true;
+  btn.textContent = 'A cancelar...';
+
+  try {
+    const { error } = await supabase
+      .from('orders')
+      .update({ status: 'cancelled' })
+      .eq('id', orderData.id);
+
+    if (error) throw error;
+
+    document.getElementById('orderView').style.display = 'none';
+    document.getElementById('cancelledView').style.display = 'block';
+
+  } catch (err) {
+    console.error('Cancel error:', err);
+    btn.disabled = false;
+    btn.textContent = 'Sim, cancelar reserva';
+    showError('Erro ao cancelar. Tenta de novo.');
+  }
+}
+
+function showError(msg) {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('errorView').style.display = 'block';
+}
+
+init();
+</script>
+
+</body>
+</html>

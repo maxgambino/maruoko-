@@ -1458,7 +1458,7 @@ async function loadCategories() {
     renderMenuEditor();
     populateCategoryDropdowns();
   } catch (err) {
-    console.error('Load categories error:', err);
+    console.error('Load categories error:', err.message || err.code || JSON.stringify(err));
   }
 }
 
@@ -1473,7 +1473,7 @@ async function loadConfig() {
     restaurantConfig = data || {};
     renderConfig();
   } catch (err) {
-    console.error('Load config error:', err);
+    console.error('Load config error:', err.message || err.code || JSON.stringify(err));
   }
 }
 
@@ -1487,7 +1487,7 @@ async function loadSchedule() {
     scheduleConfig = data || [];
     renderSchedule();
   } catch (err) {
-    console.error('Load schedule error:', err);
+    console.error('Load schedule error:', err.message || err.code || JSON.stringify(err));
   }
 }
 
@@ -2023,7 +2023,7 @@ function renderSchedule() {
       '<span class="day-label">' + d.label + '</span>' +
       '<select id="schedule-' + d.dow + '">' +
         '<option value="closed"' + (val === 'closed' ? ' selected' : '') + '>Fechado</option>' +
-        '<option value="no_reservation"' + (val === 'no_reservation' ? ' selected' : '') + '>Sem reserva</option>' +
+        '<option value="walk_in"' + (val === 'walk_in' ? ' selected' : '') + '>Sem reserva</option>' +
         '<option value="online"' + (val === 'online' ? ' selected' : '') + '>Reservas online</option>' +
       '</select>' +
     '</div>';
@@ -2317,7 +2317,17 @@ async function saveConfig() {
     closed_message: document.getElementById('cfg-closed-message').value.trim()
   };
 
+  var btn = event && event.target;
+  if (btn) { btn.disabled = true; btn.textContent = 'A guardar...'; }
+
   try {
+    // Check if table exists
+    var { error: checkErr } = await supabase.from('restaurant_config').select('id').limit(1);
+    if (checkErr) {
+      showToast('Tabela restaurant_config nao existe. Executa migration_v2.sql no Supabase.', 'error');
+      return;
+    }
+
     if (restaurantConfig.id) {
       var { error } = await supabase
         .from('restaurant_config')
@@ -2338,6 +2348,8 @@ async function saveConfig() {
   } catch (err) {
     console.error('Save config error:', err);
     showToast('Erro ao guardar', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar'; }
   }
 }
 
@@ -2346,22 +2358,37 @@ async function saveConfig() {
 // ============================================
 async function saveSchedule() {
   var days = [1, 2, 3, 4, 5, 6, 0];
+  var dayNames = { 0: 'Domingo', 1: 'Segunda', 2: 'Terca', 3: 'Quarta', 4: 'Quinta', 5: 'Sexta', 6: 'Sabado' };
+  var btn = event && event.target;
+  if (btn) { btn.disabled = true; btn.textContent = 'A guardar...'; }
+
   try {
+    // First check if table exists by doing a simple select
+    var { error: checkErr } = await supabase.from('schedule_config').select('id').limit(1);
+    if (checkErr) {
+      showToast('Tabela schedule_config nao existe. Executa migration_v2.sql no Supabase.', 'error');
+      return;
+    }
+
     for (var i = 0; i < days.length; i++) {
       var dow = days[i];
-      var mode = document.getElementById('schedule-' + dow).value;
+      var selectEl = document.getElementById('schedule-' + dow);
+      if (!selectEl) continue;
+      var mode = selectEl.value;
+      var isActive = mode === 'online';
       var existing = scheduleConfig.find(function(s) { return s.day_of_week === dow; });
       if (existing) {
         var { error } = await supabase
           .from('schedule_config')
-          .update({ mode: mode })
+          .update({ mode: mode, is_active: isActive })
           .eq('id', existing.id);
         if (error) throw error;
         existing.mode = mode;
+        existing.is_active = isActive;
       } else {
         var { data, error } = await supabase
           .from('schedule_config')
-          .insert({ day_of_week: dow, mode: mode })
+          .insert({ day_of_week: dow, day_name: dayNames[dow], mode: mode, is_active: isActive })
           .select()
           .single();
         if (error) throw error;
@@ -2371,7 +2398,9 @@ async function saveSchedule() {
     showToast('Horario semanal guardado', 'success');
   } catch (err) {
     console.error('Save schedule error:', err);
-    showToast('Erro ao guardar', 'error');
+    showToast('Erro ao guardar horario', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar'; }
   }
 }
 

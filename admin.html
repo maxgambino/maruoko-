@@ -1343,24 +1343,38 @@
     /* ========== SOUND TOGGLE ========== */
     /* ========== FULLSCREEN MODE ========== */
     .fs-btn {
-      position: absolute;
-      top: 24px;
-      right: 16px;
-      width: 36px;
-      height: 36px;
+      width: 100%;
+      padding: 14px;
       border-radius: 8px;
       border: 1.5px solid var(--border);
       background: var(--bg-card);
-      color: var(--text-muted);
-      font-size: 18px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--font-body);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10;
+      gap: 8px;
+      margin-top: 16px;
     }
-    .fs-btn:hover { color: var(--brand); border-color: var(--brand); }
-    #tab-orders { position: relative; }
+    .fs-btn:hover { border-color: var(--brand); color: var(--brand); }
+    .fs-exit-btn {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: var(--brand);
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 10000;
+      display: none;
+    }
     #tab-orders.fullscreen-mode {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -1368,13 +1382,9 @@
       background: var(--bg);
       overflow-y: auto;
       padding: 16px;
+      display: block !important;
     }
-    #tab-orders.fullscreen-mode .fs-btn {
-      position: fixed;
-      top: 16px;
-      right: 16px;
-      z-index: 10000;
-    }
+    #tab-orders.fullscreen-mode ~ .fs-exit-btn-global { display: flex; align-items: center; justify-content: center; }
 
     .sound-toggle {
       display: flex;
@@ -1433,7 +1443,6 @@
 
     <!-- TAB: ORDERS -->
     <div class="tab-content active" id="tab-orders">
-      <button class="fs-btn" id="fsBtn" onclick="toggleFullscreen()" title="Mode service">⛶</button>
       <div class="clock-bar">
         <div class="digital-clock" id="digitalClock">--:--</div>
       </div>
@@ -1644,9 +1653,15 @@
         <div id="scheduleRows"></div>
         <button class="btn-save" style="margin-top:10px; width:100%; padding:12px;" onclick="saveSchedule()">Guardar</button>
       </div>
+
+      <!-- Fullscreen service mode -->
+      <button class="fs-btn" onclick="toggleFullscreen()">⛶ Mode service</button>
     </div>
 
   </div>
+
+  <!-- Floating exit button for fullscreen -->
+  <button class="fs-exit-btn" id="fsExitBtn" onclick="toggleFullscreen()">✕</button>
 
 <script>
 // ============================================
@@ -1748,11 +1763,18 @@ function closeModalOutside(e) {
 // ============================================
 function toggleFullscreen() {
   var tab = document.getElementById('tab-orders');
-  var btn = document.getElementById('fsBtn');
-  tab.classList.toggle('fullscreen-mode');
+  var exitBtn = document.getElementById('fsExitBtn');
   var isFs = tab.classList.contains('fullscreen-mode');
-  btn.textContent = isFs ? '✕' : '⛶';
-  btn.title = isFs ? 'Quitter mode service' : 'Mode service';
+
+  if (!isFs) {
+    // Enter fullscreen: switch to orders tab first, then fullscreen
+    switchTab('orders', document.querySelector('.tab[data-tab="orders"]'));
+    tab.classList.add('fullscreen-mode');
+    exitBtn.style.display = 'flex';
+  } else {
+    tab.classList.remove('fullscreen-mode');
+    exitBtn.style.display = 'none';
+  }
 }
 
 function updateClock() {

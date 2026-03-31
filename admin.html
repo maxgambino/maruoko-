@@ -166,6 +166,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      margin-top: 24px;
       margin-bottom: 16px;
       gap: 12px;
     }
@@ -983,7 +984,7 @@
       font-size: 14px;
     }
     .empty-state .icon { font-size: 36px; margin-bottom: 8px; }
-    .empty-state .mascot { width: 160px; height: auto; margin-bottom: 12px; }
+    .empty-state .mascot { width: 240px; height: auto; margin-bottom: 16px; }
 
     /* ========== TOAST ========== */
     .toast-container {
@@ -1578,7 +1579,7 @@ function renderOrders() {
   const container = document.getElementById('ordersContainer');
 
   if (filtered.length === 0) {
-    container.innerHTML = '<div class="empty-state"><img class="mascot" src="Gemini_Generated_Image_wtzutjwtzutjwtzu.png" alt=""><p>Nenhuma reserva encontrada</p></div>';
+    container.innerHTML = '<div class="empty-state"><img class="mascot" src="Reservation Maruoko.png" alt=""><p>Nenhuma reserva encontrada</p></div>';
     return;
   }
 

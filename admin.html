@@ -41,6 +41,11 @@
     }
 
     /* ========== TOPBAR ========== */
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
     .topbar {
       background: var(--brand);
       color: white;
@@ -48,12 +53,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
     }
     .topbar h1 { font-size: 18px; font-weight: 700; }
-    .topbar .date-display { font-size: 13px; opacity: 0.8; }
+    .topbar .date-display { font-size: 18px; font-weight: 700; }
 
     /* ========== TABS ========== */
     .tabs {
@@ -62,9 +64,6 @@
       border-bottom: 1.5px solid var(--border);
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
-      position: sticky;
-      top: 0;
-      z-index: 100;
     }
     .tab {
       flex: 1;
@@ -1089,15 +1088,12 @@
 </head>
 <body>
 
+  <!-- STICKY HEADER -->
+  <div class="sticky-header">
   <!-- TOPBAR -->
   <div class="topbar">
     <h1>MARUOKO</h1>
-    <div style="display:flex; align-items:center; gap:10px;">
-      <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">
-        <span id="soundIcon">&#128276;</span> Son
-      </button>
-      <div class="date-display" id="dateDisplay"></div>
-    </div>
+    <div class="date-display" id="dateDisplay"></div>
   </div>
 
   <!-- TABS -->
@@ -1109,6 +1105,7 @@
     <button class="tab" data-tab="qrcode" onclick="switchTab('qrcode', this)">QR Code</button>
     <button class="tab" data-tab="config" onclick="switchTab('config', this)">Config</button>
   </div>
+  </div><!-- /sticky-header -->
 
   <!-- TOAST -->
   <div class="toast-container toast-info" id="toastEl"></div>
@@ -1301,6 +1298,17 @@
           <textarea id="cfg-closed-message" placeholder="Voltamos em breve..."></textarea>
         </div>
         <button class="btn-save" style="margin-top:10px; width:100%; padding:12px;" onclick="saveConfig()">Guardar</button>
+      </div>
+
+      <!-- Sound notifications -->
+      <div class="config-section">
+        <h4>Notificacoes</h4>
+        <div class="config-row" style="display:flex; align-items:center; justify-content:space-between;">
+          <label style="margin-bottom:0;">Som de novas encomendas</label>
+          <button class="sound-toggle" id="soundToggle" onclick="toggleSound()" style="position:relative;">
+            <span id="soundIcon">&#128276;</span> Son
+          </button>
+        </div>
       </div>
 
       <!-- Weekly schedule -->

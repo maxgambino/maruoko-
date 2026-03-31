@@ -332,17 +332,17 @@
     .refresh-btn:active { transform: scale(0.96); }
 
     /* ========== SLOT GROUP ========== */
-    .slot-group { margin-bottom: 16px; }
+    .slot-group { margin-bottom: 14px; }
     .slot-group-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 0;
+      padding: 6px 0;
       font-weight: 700;
-      font-size: 15px;
+      font-size: 14px;
       color: var(--brand);
       border-bottom: 2px solid var(--border);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
     .slot-group-header .badge {
       font-size: 11px;
@@ -352,16 +352,29 @@
       background: #f9f0ef;
       color: var(--brand);
     }
+    .slot-group-cards {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 6px;
+      scroll-snap-type: x mandatory;
+    }
+    .slot-group-cards::-webkit-scrollbar { height: 4px; }
+    .slot-group-cards::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-    /* ========== ORDER CARD ========== */
+    /* ========== ORDER CARD (compact horizontal) ========== */
     .order-card {
       background: var(--bg-card);
       border: 1.5px solid var(--border);
       border-radius: 12px;
       padding: 0;
-      margin-bottom: 10px;
+      min-width: 260px;
+      max-width: 280px;
+      flex-shrink: 0;
       overflow: hidden;
       transition: border-color 0.2s;
+      scroll-snap-align: start;
     }
     .order-card.highlight {
       border-color: var(--brand);
@@ -375,42 +388,35 @@
     .order-top {
       display: flex;
       align-items: center;
-      padding: 14px 16px 10px;
-      gap: 12px;
+      padding: 10px 12px 6px;
+      gap: 8px;
     }
     .order-number {
       font-weight: 800;
-      font-size: 22px;
+      font-size: 18px;
       color: var(--brand);
       font-family: var(--font-body);
       letter-spacing: -0.5px;
     }
-    .order-customer {
-      flex: 1;
-      min-width: 0;
-    }
     .order-name {
       flex: 1;
       font-weight: 700;
-      font-size: 16px;
-      color: var(--text);
-    }
-    .order-phone-row {
-      padding: 0 16px 8px;
       font-size: 13px;
-      color: var(--text-muted);
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .order-phone-row::before { content: '📞 '; }
     /* Items section */
     .order-items-section {
-      padding: 0 16px 12px;
+      padding: 0 12px 8px;
     }
     .order-item-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 6px 0;
-      font-size: 14px;
+      padding: 3px 0;
+      font-size: 12px;
     }
     .order-item-row + .order-item-row {
       border-top: 1px solid var(--border);
@@ -418,24 +424,33 @@
     .order-item-qty {
       font-weight: 700;
       color: var(--brand);
-      min-width: 28px;
+      min-width: 24px;
+      font-size: 12px;
     }
     .order-item-name {
       flex: 1;
       color: var(--text);
       font-weight: 500;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .order-item-price {
       color: var(--text-muted);
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 500;
+      margin-left: 6px;
     }
     /* Notes */
     .order-notes {
-      padding: 0 16px 10px;
-      font-size: 13px;
+      padding: 0 12px 6px;
+      font-size: 11px;
       color: var(--warning);
       font-style: italic;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .order-notes::before { content: '📝 '; }
     /* Footer: total + actions */
@@ -443,30 +458,33 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 16px;
+      padding: 8px 12px;
       background: var(--bg);
       border-top: 1px solid var(--border);
+      gap: 4px;
     }
     .order-total {
-      font-size: 18px;
+      font-size: 15px;
       font-weight: 800;
       color: var(--brand);
     }
     .order-actions {
       display: flex;
-      gap: 6px;
+      gap: 4px;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     /* ========== STATUS BADGES ========== */
     .status-badge {
       display: inline-block;
-      font-size: 11px;
+      font-size: 9px;
       font-weight: 700;
-      padding: 5px 12px;
+      padding: 3px 8px;
       border-radius: 20px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      white-space: nowrap;
     }
     .status-pending { background: var(--warning-bg); color: var(--warning); }
     .status-confirmed { background: #E3F2FD; color: #1565C0; }
@@ -476,9 +494,9 @@
 
     /* ========== ACTION BUTTONS ========== */
     .action-btn {
-      padding: 7px 14px;
-      border-radius: 8px;
-      font-size: 12px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 10px;
       font-weight: 600;
       border: none;
       cursor: pointer;
@@ -493,16 +511,16 @@
     /* ========== WHATSAPP BUTTONS ========== */
     .wa-actions {
       display: flex;
-      gap: 6px;
-      padding: 0 16px 12px;
+      gap: 4px;
+      padding: 0 12px 8px;
     }
     .wa-btn {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 12px;
+      gap: 4px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 10px;
       font-weight: 600;
       border: none;
       cursor: pointer;
@@ -514,15 +532,15 @@
     }
     .wa-btn:hover { opacity: 0.9; }
     .wa-btn:active { transform: scale(0.95); }
-    .wa-btn svg { width: 16px; height: 16px; fill: white; flex-shrink: 0; }
+    .wa-btn svg { width: 12px; height: 12px; fill: white; flex-shrink: 0; }
     .wa-btn.wa-secondary {
       background: #E8F5E9;
       color: #25D366;
     }
     .wa-btn.wa-secondary svg { fill: #25D366; }
     .wa-no-phone {
-      padding: 0 16px 12px;
-      font-size: 12px;
+      padding: 0 12px 6px;
+      font-size: 10px;
       color: var(--text-muted);
       font-style: italic;
     }
@@ -2081,7 +2099,7 @@ function renderOrders() {
       var slotOrders = entry[1];
       return '<div class="slot-group">' +
         '<div class="slot-group-header"><span>' + time + '</span><span class="badge">' + slotOrders.length + ' reserva' + (slotOrders.length > 1 ? 's' : '') + '</span></div>' +
-        slotOrders.map(renderOrderCard).join('') +
+        '<div class="slot-group-cards">' + slotOrders.map(renderOrderCard).join('') + '</div>' +
         '</div>';
     }).join('');
 }

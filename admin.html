@@ -62,6 +62,9 @@
       border-bottom: 1.5px solid var(--border);
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
     .tab {
       flex: 1;
@@ -1579,7 +1582,7 @@ function renderOrders() {
   const container = document.getElementById('ordersContainer');
 
   if (filtered.length === 0) {
-    container.innerHTML = '<div class="empty-state"><img class="mascot" src="Reservation Maruoko.png" alt=""><p>Nenhuma reserva encontrada</p></div>';
+    container.innerHTML = '<div class="empty-state"><img class="mascot" src="reservation.png" alt=""><p>Nenhuma reserva encontrada</p></div>';
     return;
   }
 

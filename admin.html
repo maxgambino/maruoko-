@@ -171,16 +171,16 @@
     }
     .digital-clock {
       font-family: var(--font-body);
-      font-size: 52px;
+      font-size: 64px;
       font-weight: 800;
-      color: var(--brand);
-      letter-spacing: 2px;
+      color: var(--text);
+      letter-spacing: 4px;
       line-height: 1;
+      width: 100%;
+      text-align: center;
     }
     .digital-clock .clock-sep {
-      animation: blink 1s step-end infinite;
     }
-    @keyframes blink { 50% { opacity: 0; } }
 
     /* ========== REFRESH BAR ========== */
     .refresh-bar {
@@ -1126,11 +1126,7 @@
     <!-- TAB: ORDERS -->
     <div class="tab-content active" id="tab-orders">
       <div class="clock-bar">
-        <div class="digital-clock" id="digitalClock">--H--</div>
-      </div>
-      <div class="refresh-bar">
-        <span class="last-update" id="lastUpdate">&mdash;</span>
-        <button class="refresh-btn" onclick="loadOrders()">Atualizar</button>
+        <div class="digital-clock" id="digitalClock">--:--</div>
       </div>
       <div class="stats-row" id="statsRow"></div>
       <input type="text" class="search-input" id="orderSearch" placeholder="Pesquisar por nome ou #numero..." oninput="filterOrders()">
@@ -1413,7 +1409,7 @@ function updateClock() {
   var h = String(now.getHours()).padStart(2, '0');
   var m = String(now.getMinutes()).padStart(2, '0');
   var el = document.getElementById('digitalClock');
-  if (el) el.innerHTML = h + '<span class="clock-sep">H</span>' + m;
+  if (el) el.innerHTML = h + '<span class="clock-sep">:</span>' + m;
 }
 
 async function init() {
@@ -1451,8 +1447,6 @@ async function loadOrders() {
     orders = data || [];
     renderOrders();
     renderPrep();
-    document.getElementById('lastUpdate').textContent =
-      'Atualizado: ' + new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
   } catch (err) {
     console.error('Load orders error:', err);
   }

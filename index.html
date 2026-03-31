@@ -440,56 +440,136 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ========== CLOSED STATE ========== */
-    .closed-state {
+    /* ========== DATE PICKER (Step 0) ========== */
+    .date-picker-section {
       text-align: center;
-      padding: 20px 0;
+      padding: 8px 0;
     }
-    .closed-state img {
-      width: 140px;
-      height: auto;
-      margin-bottom: 16px;
-    }
-    .closed-state h2 {
+    .date-picker-section h2 {
       font-size: 22px;
       font-weight: 700;
       color: var(--brand);
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
-    .closed-state p {
+    .date-picker-section p {
       color: var(--text-muted);
       font-size: 14px;
-      line-height: 1.6;
+      margin-bottom: 16px;
     }
-    .closed-state .schedule {
+    .dp-calendar {
       background: var(--bg-card);
       border: 1.5px solid var(--border);
       border-radius: var(--radius);
       padding: 16px;
-      margin-top: 20px;
-      text-align: left;
+      margin-bottom: 12px;
     }
-    .closed-state .schedule-row {
+    .dp-cal-header {
       display: flex;
       justify-content: space-between;
-      padding: 6px 0;
-      font-size: 14px;
+      align-items: center;
+      margin-bottom: 12px;
     }
-    .closed-state .schedule-row + .schedule-row {
-      border-top: 1px solid var(--border);
+    .dp-cal-header .dp-month {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text);
+      text-transform: capitalize;
     }
-    .closed-state .schedule-row .day { font-weight: 600; color: var(--text); }
-    .closed-state .schedule-row .status { color: var(--text-muted); }
-    .closed-state .schedule-row.highlight .day { color: var(--brand); }
-    .closed-state .schedule-row.highlight .status { color: var(--brand); font-weight: 600; }
-    .closed-state .schedule-row.clickable {
+    .dp-cal-header button {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      font-size: 16px;
+      color: var(--text);
       cursor: pointer;
-      transition: background 0.2s;
-      border-radius: 8px;
-      padding: 10px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
     }
-    .closed-state .schedule-row.clickable:hover { background: #f9f0ef; }
-    .closed-state .schedule-row.clickable:active { transform: scale(0.98); }
+    .dp-cal-header button:active { transform: scale(0.92); }
+    .dp-cal-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0;
+      margin-bottom: 4px;
+    }
+    .dp-cal-weekdays span {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-align: center;
+      text-transform: uppercase;
+      padding: 4px 0;
+    }
+    .dp-cal-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .dp-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-light);
+      border: none;
+      background: none;
+      cursor: default;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .dp-day.empty { visibility: hidden; }
+    .dp-day.available {
+      color: var(--brand);
+      font-weight: 700;
+      cursor: pointer;
+      background: #f9f0ef;
+    }
+    .dp-day.available:hover {
+      background: var(--brand);
+      color: white;
+    }
+    .dp-day.available:active { transform: scale(0.9); }
+    .dp-day.selected {
+      background: var(--brand);
+      color: white;
+      font-weight: 700;
+    }
+    .dp-day.today {
+      border: 2px solid var(--brand);
+    }
+    .dp-day.past {
+      color: var(--text-light);
+      opacity: 0.4;
+    }
+    .dp-legend {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .dp-legend span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .dp-legend .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dp-legend .dot.open { background: #f9f0ef; border: 1.5px solid var(--brand); }
+    .dp-legend .dot.closed { background: var(--text-light); opacity: 0.4; }
+
     .date-banner {
       background: var(--brand);
       color: white;
@@ -498,7 +578,7 @@
       border-radius: 10px;
       font-size: 14px;
       font-weight: 600;
-      margin: 0 20px 12px;
+      margin: 0 0 12px;
     }
 
     /* ========== ERROR ========== */
@@ -527,23 +607,45 @@
       <div class="step-dot active"></div>
       <div class="step-dot"></div>
       <div class="step-dot"></div>
+      <div class="step-dot"></div>
     </div>
+
+    <!-- DATE BANNER (shown after date selection) -->
+    <div class="date-banner" id="dateBanner" style="display:none;"></div>
 
     <!-- ERROR -->
     <div class="error-msg" id="errorMsg"></div>
 
-    <!-- CLOSED STATE (dynamically rendered) -->
-    <div class="closed-state" id="closedState" style="display:none;">
-      <img src="Sans%20titre%20(315%20x%20250%20px).png" alt="Mascotte Maruoko">
-      <h2 id="closedTitle">Estamos fechados!</h2>
-      <p id="closedMsg">O sistema de reservas esta fechado de momento.</p>
-      <div class="schedule" id="scheduleGrid"></div>
-    </div>
-
     <!-- LOADING -->
     <div class="loading" id="loadingState">
       <div class="spinner"></div>
-      <p>A carregar o menu...</p>
+      <p>A carregar...</p>
+    </div>
+
+    <!-- STEP 0: DATE PICKER -->
+    <div class="section" id="step0">
+      <div class="date-picker-section">
+        <h2>Quando queres reservar?</h2>
+        <p>Escolhe uma data disponivel</p>
+        <div class="dp-calendar">
+          <div class="dp-cal-header">
+            <button onclick="shiftDpMonth(-1)">&#8249;</button>
+            <span class="dp-month" id="dpMonthLabel"></span>
+            <button onclick="shiftDpMonth(1)">&#8250;</button>
+          </div>
+          <div class="dp-cal-weekdays">
+            <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sab</span><span>Dom</span>
+          </div>
+          <div class="dp-cal-days" id="dpCalDays"></div>
+          <div class="dp-legend">
+            <span><span class="dot open"></span> Disponivel</span>
+            <span><span class="dot closed"></span> Fechado</span>
+          </div>
+        </div>
+        <div style="text-align:center; padding:0 0 6px;">
+          <img src="Sans%20titre%20(315%20x%20250%20px).png" alt="Mascotte Maruoko" style="width:120px; height:auto;">
+        </div>
+      </div>
     </div>
 
     <!-- STEP 1: MENU -->
@@ -641,10 +743,11 @@ let menuCategories = [];
 let slots = [];
 let cart = {};           // { itemId: quantity }
 let selectedSlot = null;
-let selectedDate = null; // ISO string for advance booking, null = today
-let currentStep = 1;
+let selectedDate = null; // ISO string YYYY-MM-DD
+let currentStep = 0;
 let _scheduleCache = null;
 let _configCache = null;
+let dpViewDate = new Date(); // calendar view month
 
 // ============================================
 // INIT
@@ -662,68 +765,11 @@ async function init() {
     _scheduleCache = schedule;
     _configCache = config;
 
-    // Check today's schedule
-    const dayOfWeek = new Date().getDay();
-    const todaySchedule = schedule.find(s => s.day_of_week === dayOfWeek);
-    const isOnline = todaySchedule && todaySchedule.mode === 'online' && todaySchedule.is_active;
-
-    // If not online today, show closed state with dynamic schedule
-    if (!isOnline) {
-      document.getElementById('loadingState').style.display = 'none';
-      document.getElementById('stepper').style.display = 'none';
-      document.getElementById('bottomBar').style.display = 'none';
-
-      // Set messages from config
-      if (config.closed_title) document.getElementById('closedTitle').textContent = config.closed_title;
-      if (config.closed_message) document.getElementById('closedMsg').textContent = config.closed_message;
-
-      // Render dynamic schedule (Monday first: 1,2,3,4,5,6,0)
-      const dayOrder = [1, 2, 3, 4, 5, 6, 0];
-      const modeLabels = { closed: 'Fechado', walk_in: 'Sem reserva', online: 'Reservas online' };
-      const grid = document.getElementById('scheduleGrid');
-      grid.innerHTML = dayOrder.map(dow => {
-        const day = schedule.find(s => s.day_of_week === dow);
-        if (!day) return '';
-        const isOnlineDay = day.mode === 'online' && day.is_active;
-        if (isOnlineDay) {
-          return `<div class="schedule-row highlight clickable" onclick="selectBookingDate(${dow})">
-            <span class="day">${day.day_name}</span>
-            <span class="status">Reservar ➜</span>
-          </div>`;
-        }
-        return `<div class="schedule-row">
-          <span class="day">${day.day_name}</span>
-          <span class="status">${modeLabels[day.mode] || day.mode}</span>
-        </div>`;
-      }).join('');
-
-      document.getElementById('closedState').style.display = 'block';
-      return;
-    }
-
-    // Load menu items + categories + slot availability
-    const [menuRes, catRes, slotRes] = await Promise.all([
-      supabase.from('menu_items').select('*').eq('available', true).order('position'),
-      supabase.from('menu_categories').select('*').eq('is_active', true).order('position'),
-      supabase.rpc('get_slot_availability', { target_date: new Date().toISOString().split('T')[0] })
-    ]);
-
-    if (menuRes.error) throw menuRes.error;
-    if (slotRes.error) throw slotRes.error;
-
-    menuItems = menuRes.data || [];
-    menuCategories = catRes.data || [];
-    slots = slotRes.data || [];
-
-    // Apply config messages
-    if (config.opening_message) {
-      document.querySelector('#step1 .section-title').textContent = config.opening_message;
-    }
-
-    renderMenu();
-    renderSlots();
-    showStep(1);
+    // Always start with date picker
     document.getElementById('loadingState').style.display = 'none';
+    dpViewDate = new Date();
+    renderDpCalendar();
+    showStep(0);
   } catch (err) {
     console.error('Init error:', err);
     document.getElementById('loadingState').style.display = 'none';
@@ -895,8 +941,8 @@ function updateBottomBar() {
 
   const totalEl = document.getElementById('totalWrap');
 
-  // Show back button on step 2+ or step 1 with advance booking
-  btnBack.style.display = (currentStep > 1 || (currentStep === 1 && selectedDate)) ? 'flex' : 'none';
+  // Show back button on step 1+ (always back to date picker from step 1)
+  btnBack.style.display = (currentStep >= 1) ? 'flex' : 'none';
   totalEl.style.display = currentStep === 1 ? 'block' : 'none';
 
   if (currentStep === 1) {
@@ -920,16 +966,30 @@ function showStep(step) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById(`step${step}`).classList.add('active');
 
-  // Update stepper dots
+  // Update stepper dots (4 dots: 0=date, 1=menu, 2=slot, 3=info)
   document.querySelectorAll('.step-dot').forEach((dot, i) => {
     dot.className = 'step-dot';
-    if (i + 1 === step) dot.classList.add('active');
-    else if (i + 1 < step) dot.classList.add('done');
+    if (i === step) dot.classList.add('active');
+    else if (i < step) dot.classList.add('done');
   });
 
-  // Bottom bar visibility
+  // Date banner visibility
+  const banner = document.getElementById('dateBanner');
+  if (selectedDate && step >= 1 && step <= 3) {
+    var dateObj = new Date(selectedDate + 'T12:00:00');
+    var formatted = dateObj.toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' });
+    banner.textContent = 'Reserva para ' + formatted;
+    banner.style.display = 'block';
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // Bottom bar visibility (steps 1 and 2 only)
   const bar = document.getElementById('bottomBar');
-  bar.style.display = (step <= 2) ? 'flex' : 'none';
+  bar.style.display = (step === 1 || step === 2) ? 'flex' : 'none';
+
+  // Stepper visible except on step 4
+  document.getElementById('stepper').style.display = (step <= 3) ? 'flex' : 'none';
 
   updateBottomBar();
 
@@ -944,39 +1004,94 @@ function nextStep() {
 }
 
 function prevStep() {
-  if (currentStep === 1 && selectedDate) {
-    // Back to schedule view
-    selectedDate = null;
+  if (currentStep === 1) {
+    // Back to date picker — reset cart
     cart = {};
     selectedSlot = null;
-    var banner = document.getElementById('dateBanner');
-    if (banner) banner.remove();
-    document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
-    document.getElementById('stepper').style.display = 'none';
-    document.getElementById('bottomBar').style.display = 'none';
-    document.getElementById('closedState').style.display = 'block';
+    selectedDate = null;
+    renderDpCalendar();
+    showStep(0);
     return;
   }
   if (currentStep > 1) showStep(currentStep - 1);
 }
 
 // ============================================
-// ADVANCE BOOKING
+// DATE PICKER CALENDAR
 // ============================================
-function getNextOccurrence(targetDow) {
-  const now = new Date();
-  const currentDow = now.getDay();
-  let daysAhead = targetDow - currentDow;
-  if (daysAhead <= 0) daysAhead += 7;
-  const target = new Date(now);
-  target.setDate(now.getDate() + daysAhead);
-  return target.toISOString().split('T')[0];
+function getOnlineDows() {
+  if (!_scheduleCache) return [];
+  return _scheduleCache
+    .filter(s => s.mode === 'online' && s.is_active)
+    .map(s => s.day_of_week);
 }
 
-async function selectBookingDate(dow) {
-  selectedDate = getNextOccurrence(dow);
+function isDayOnline(dateObj) {
+  const onlineDows = getOnlineDows();
+  return onlineDows.includes(dateObj.getDay());
+}
 
-  document.getElementById('closedState').style.display = 'none';
+function toISODate(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function renderDpCalendar() {
+  const year = dpViewDate.getFullYear();
+  const month = dpViewDate.getMonth();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = toISODate(today);
+
+  // Month label
+  const monthName = new Date(year, month, 1).toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
+  document.getElementById('dpMonthLabel').textContent = monthName;
+
+  // First day of month (0=Sun ... 6=Sat) → convert to Mon-first (0=Mon ... 6=Sun)
+  const firstDay = new Date(year, month, 1).getDay();
+  const startOffset = (firstDay === 0) ? 6 : firstDay - 1; // Mon-first
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const container = document.getElementById('dpCalDays');
+  let html = '';
+
+  // Empty cells before first day
+  for (let i = 0; i < startOffset; i++) {
+    html += '<div class="dp-day empty"></div>';
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateObj = new Date(year, month, d);
+    const dateStr = toISODate(dateObj);
+    const isPast = dateObj < today;
+    const isToday = dateStr === todayStr;
+    const isOnline = isDayOnline(dateObj);
+    const isSelected = selectedDate === dateStr;
+
+    let cls = 'dp-day';
+    if (isPast) cls += ' past';
+    else if (isOnline) cls += ' available';
+    if (isToday) cls += ' today';
+    if (isSelected) cls += ' selected';
+
+    const clickable = (!isPast && isOnline) ? `onclick="selectDate('${dateStr}')"` : '';
+
+    html += `<div class="${cls}" ${clickable}>${d}</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function shiftDpMonth(delta) {
+  dpViewDate.setMonth(dpViewDate.getMonth() + delta);
+  renderDpCalendar();
+}
+
+async function selectDate(dateStr) {
+  selectedDate = dateStr;
+  renderDpCalendar(); // highlight selected
+
+  // Show loading
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('loadingState').style.display = 'block';
 
   try {
@@ -996,8 +1111,9 @@ async function selectBookingDate(dow) {
     if (slots.length === 0) {
       showError('Sem horarios disponiveis para esta data.');
       document.getElementById('loadingState').style.display = 'none';
-      document.getElementById('closedState').style.display = 'block';
       selectedDate = null;
+      renderDpCalendar();
+      showStep(0);
       return;
     }
 
@@ -1005,38 +1121,20 @@ async function selectBookingDate(dow) {
       document.querySelector('#step1 .section-title').textContent = _configCache.opening_message;
     }
 
+    cart = {};
+    selectedSlot = null;
     renderMenu();
     renderSlots();
-    renderDateBanner();
+    document.getElementById('loadingState').style.display = 'none';
     showStep(1);
-    document.getElementById('loadingState').style.display = 'none';
-    document.getElementById('stepper').style.display = 'flex';
   } catch (err) {
-    console.error('selectBookingDate error:', err);
-    showError('Erro ao carregar horarios.');
+    console.error('selectDate error:', err);
+    showError('Erro ao carregar. Tenta de novo.');
     document.getElementById('loadingState').style.display = 'none';
-    document.getElementById('closedState').style.display = 'block';
     selectedDate = null;
+    renderDpCalendar();
+    showStep(0);
   }
-}
-
-function renderDateBanner() {
-  var existing = document.getElementById('dateBanner');
-  if (existing) existing.remove();
-  if (!selectedDate) return;
-
-  var dateObj = new Date(selectedDate + 'T12:00:00');
-  var formatted = dateObj.toLocaleDateString('pt-PT', {
-    weekday: 'long', day: 'numeric', month: 'long'
-  });
-
-  var banner = document.createElement('div');
-  banner.id = 'dateBanner';
-  banner.className = 'date-banner';
-  banner.textContent = 'Reserva para ' + formatted;
-
-  var stepper = document.getElementById('stepper');
-  stepper.parentNode.insertBefore(banner, stepper);
 }
 
 // ============================================
@@ -1058,7 +1156,7 @@ async function submitOrder() {
   hideError();
 
   try {
-    const bookingDate = selectedDate || new Date().toISOString().split('T')[0];
+    const bookingDate = selectedDate;
     const total = getTotal();
 
     // Insert order
@@ -1127,9 +1225,9 @@ function resetApp() {
   cart = {};
   selectedSlot = null;
   selectedDate = null;
-  var banner = document.getElementById('dateBanner');
-  if (banner) banner.remove();
-  init();
+  dpViewDate = new Date();
+  renderDpCalendar();
+  showStep(0);
 }
 
 // ============================================
